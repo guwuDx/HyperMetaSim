@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+      "C:/Program Files (x86)/CST Studio Suite 2022/AMD64/python_cst_libraries"
+    ]
+  }
