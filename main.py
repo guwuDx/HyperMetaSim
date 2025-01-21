@@ -1,8 +1,16 @@
 import utils.misc as misc
 
 misc.add_cst_lib_path()
-import cst
+from cst.interface import DesignEnvironment
 
-print(cst.__file__)
 
-cst_app = misc.cst_conn()
+def main():
+    # cst_app = misc.cst_conn()
+    # print(csti.DesignEnvironment)
+    de = DesignEnvironment.new()
+    
+    de.close()
+
+
+if __name__ == '__main__':
+    main()
