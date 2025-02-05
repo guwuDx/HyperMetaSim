@@ -1,82 +1,113 @@
-import win32com.client
-import pythoncom
+from utils import misc
 import pandas as pd
+import os
 
-class cst_init:
+misc.add_cst_lib_path()
+from cst.interface import DesignEnvironment, Project
 
-    def __init__(self, name, cst_version=2022):
-        self.name = name
-        self.cst_version = cst_version
-        self.app = None
-        self.prj = pd.DataFrame(columns=["hdl", "name", "path", "type"])
-        self.env_init()
+# project_name = "square_pillar"
+_template_path = "/templates/"
+_instance_path = "/instances/"
+_projects_path = misc.read_toml("./config/service.toml", "cst")["projects_path"]
 
+class CSTHandler:
 
-    def env_check(self):
-        try:
-            cst_app = win32com.client.GetActiveObject("CSTStudio.Application")
-        except:
-            print("[ OK ] CST is not running, environment is Clean")
-            return None
+    def __init__(self, debug=False):
+        self.de = None
+        self.pid = None
+        self.crr_prj = None
+        self.crr_prj_type = None
+        self._projects_path = None
+        self._template_path = None
+        self._instance_path = None
+        self.prjs = pd.DataFrame(columns=["project_instance", "project_type"])
+        self._get_cnf()
+        if debug: self._conn_de()
+        else: self._new_de()
 
-        if cst_app:
-            print("[ERRO] A CST instance is already running, please close it and try again")
-            raise RuntimeError("CST is already running")
-        else:
-            print("[ OK ] CST is not running, Environment is Clean")
-            return None
+    def _new_de(self):
+        # cst_app = misc.cst_conn()
+        # print(csti.DesignEnvironment)
 
-    def env_up(self, interactive=False):
-        print("[INFO] Starting CST ...")
-        cst_com = win32com.client.Dispatch("CSTStudio.Application")
-        if cst_com:
-            if isinstance(cst_com, int):
-                print(f"[ERRO] CST startup failed and returned error code: {cst_com}")
-                raise RuntimeError(f"[ERRO] CST startup failed and returned error code: {cst_com}")
-            if not hasattr(cst_com, "GetFileMainVersion"):
-                print("[ERRO] failed to get CST MAIN VERSION, please check the installation")
-                raise RuntimeError("[ERRO] failed to get CST MAIN VERSION, please check the installation")
-            if not hasattr(cst_com, "GetFilePatchVersion"):
-                print("[ERRO] failed to get CST PATCH VERSION, please check the installation")
-                raise RuntimeError("[ERRO] failed to get CST PATCH VERSION, please check the installation")
-            if not interactive:
-                cst_com.SetQuietMode(interactive)
-                print("[INFO] CST was configured to run in interactive mode, user input is blocked")
+        print("[INFO] Starting a brand new CST Design Environment ...")
+        de = DesignEnvironment()
+        if de.is_connected():
+            print('[ OK ] Connected to CST Design Environment successfully')
+            print('[INFO] CST version: ', de.version())
+            print('[INFO] pid: ', de.pid())
+            prjs = de.list_open_projects()
+            if prjs:
+                print('[INFO] current projects: ')
+                for prj in prjs:
+                    print(prj)
             else:
-                print("[WARN] CST was configured to run in interactive mode")
-                print("[WARN] DO NOT interfere with the GUI unless you know what you are doing")
-            self.app = cst_com
-            return None
+                print('[INFO] No projects are opened')
+            print('[INFO] Init OK')
         else:
-            print("[ERRO] CST startup failed, please check the installation")
-            raise SystemExit(1)
+            print('[ERRO] Failed to connect to CST Design Environment, please check the installation')
+            raise RuntimeError("Failed to connect to CST Design Environment")
+        self.de = de
+        self.pid = de.pid()
 
 
-    def env_init(self):
-        pythoncom.CoInitialize()
-        self.env_check()
-        self.env_up()
-        print("[ OK ] CST is up and running")
+    def _conn_de(self):
+        self.de = DesignEnvironment.connect_to_any_or_new()
 
 
-    def env_down(self):
-        print("[INFO] Shutting down CST ...")
-        cst_app = win32com.client.GetActiveObject("CSTStudio.Application")
-        if cst_app:
-            cst_app.Quit()
-            print("[ OK ] CST shutdown successfully")
+    def open_template(self, metastructure_type):
+        projects_path = misc.read_toml("./config/service.toml", "cst")["projects_path"]
+
+        source_project_path = f"{projects_path}{self._template_path}{metastructure_type}.cst"
+        print("[INFO] Opening project: " + source_project_path)
+        prj = self.de.open_project(source_project_path)
+        prj.activate()
+        print("[ OK ] Project \"" + prj.filename() + "\" opened successfully")
+        # prj_type = prj.project_type()
+        
+        print("Accessing to Modeler ...")
+        if prj.modeler.is_solver_running():
+            print("[WARN] Solver is running, Aborting ...")
+            prj.modeler.abort_solver()
+            print("[ OK ] Solver aborted successfully")
         else:
-            print("[INFO] CST is not running")
-        return None
+            print("[INFO] Solver is not running, continuing ...")
+        self.crr_prj = prj
+        self.crr_prj_type = metastructure_type
 
 
-    def inst_mws_prj(self, full_prj_name):
-        mws = self.app.NewMWS()
+    def instantiate_template(self, project_name):
+        print("[INFO] Instantiating Project ...")
+        instance_project_path = f"{self._projects_path}{self._instance_path}/{self.crr_prj_type}/{project_name}.cst"
+        self.crr_prj.save(path=instance_project_path, include_results=False)
+        print("[ OK ] Project instantiated successfully")
+        print("[INFO] current project is: ", self.crr_prj.filename())
+        prj_dict = [{
+            "project_instance": self.crr_prj, 
+            "project_type": self.crr_prj_type
+        }]
+        self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+        # crr_proj = de.get_open_projects()
+        # print(crr_proj[0], '\n---')
 
 
-    def get_env_inst(self):
-        return self.app
+    def send_vba(self, vba_code, timeout=None):
+        return self.crr_prj.shematic.excute_vba(vba_code, timeout=timeout)
 
-if __name__ == "__main__":
-    cst = cst_init("CST")
-    cst.env_down()
+
+    def _get_cnf(self):
+        print("[INFO] Reading CST configurations ...")
+        cnf = misc.read_toml("./config/service.toml", "cst")
+        self._projects_path = cnf["projects_path"]
+        self._template_path = cnf.get("template_path", _template_path)
+        self._instance_path = cnf.get("instance_path", _instance_path)
+
+
+    def close(self, force=False):
+        if force:
+            print("[WARN] Closing CST Design Environment compulsorily ...")
+            os.kill(self.pid, 9)
+            print("[ OK ] CST Design Environment closed successfully")
+        else:
+            print("[INFO] Closing CST Design Environment ...")
+            self.de.close()
+            print("[ OK ] CST Design Environment closed successfully")

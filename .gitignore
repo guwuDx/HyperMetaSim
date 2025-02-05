@@ -1,2 +1,2 @@
 config/service.toml
-cst/*
+logs/*
