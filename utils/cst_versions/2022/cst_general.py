@@ -91,7 +91,7 @@ class CSTHandler:
 
 
     def send_vba(self, vba_code, timeout=None):
-        return self.crr_prj.shematic.excute_vba(vba_code, timeout=timeout)
+        return self.crr_prj.schematic.execute_vba_code(vba_code, timeout=timeout)
 
 
     def _get_cnf(self):

@@ -1,17 +1,16 @@
 from utils import misc
-from utils import cst_gen
-from utils import macros_canva
+from utils import cst_general
+import utils.macors_canva as canvas
 
 import pythoncom
 pythoncom.CoInitialize()
 
 def main():
 
-    cst = cst_gen.CSTHandler()
+    cst = cst_general.CSTHandler(1)
     cst.open_template("square_pillar")
     cst.instantiate_template("square_pillar_inst")
-    macros_canva.Canvas.GetApplicationName(cst)
-    cst.close()
+    # cst.close()
     print("Done")
 
 
