@@ -1,4 +1,3 @@
-from utils import cst_general
 import copy
 
 
@@ -18,7 +17,7 @@ class Canvas:
             self.objs[obj_name] = []
 
         if values:
-            value_str = "\", \"".join(values)
+            value_str = "\", \"".join(list(map(str, values))) # convert to string
             code = f".{key} \"{value_str}\""
         else:
             code = f".{key}"
@@ -73,9 +72,9 @@ class Canvas:
         return res
 
 
-    def write_send(self, code, cst_app, timeout=None):
+    def write_send(self, cst_app, code, timeout=None):
         self.write(code)
-        self.send(cst_app, timeout)
+        return self.send(cst_app, timeout, clear=True)
 
 
     def preview(self):

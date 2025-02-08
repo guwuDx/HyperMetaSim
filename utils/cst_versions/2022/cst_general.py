@@ -1,4 +1,5 @@
 from utils import misc
+
 import pandas as pd
 import os
 
@@ -16,11 +17,15 @@ class CSTHandler:
         self.de = None
         self.pid = None
         self.crr_prj = None
-        self.crr_prj_type = None
         self._projects_path = None
         self._template_path = None
         self._instance_path = None
-        self.prjs = pd.DataFrame(columns=["project_instance", "project_type"])
+        self.crr_prj_properties = {
+            "type": None, 
+            "wavelegnth_min": None,
+            "wavelegnth_max": None,
+        }
+        self.prjs = pd.DataFrame(columns=["project_instance", "project_properties"])
         self._get_cnf()
         if debug: self._conn_de()
         else: self._new_de()
@@ -72,18 +77,25 @@ class CSTHandler:
         else:
             print("[INFO] Solver is not running, continuing ...")
         self.crr_prj = prj
-        self.crr_prj_type = metastructure_type
+        self.crr_prj_properties["type"] = metastructure_type
 
 
-    def instantiate_template(self, project_name):
+    def instantiate_template(self, project_name, wavelength_min, wavelength_max):
+        from utils import basic_operations
+
+        crr_prj_type = self.crr_prj_properties["type"]
+
         print("[INFO] Instantiating Project ...")
-        instance_project_path = f"{self._projects_path}{self._instance_path}/{self.crr_prj_type}/{project_name}.cst"
+        instance_project_path = f"{self._projects_path}{self._instance_path}/{crr_prj_type}/{project_name}.cst"
         self.crr_prj.save(path=instance_project_path, include_results=False)
         print("[ OK ] Project instantiated successfully")
         print("[INFO] current project is: ", self.crr_prj.filename())
+
+        basic_operations.set_prj_wavelength(self, wavelength_min, wavelength_max)
+        self.crr_prj_properties["type"] = crr_prj_type
         prj_dict = [{
             "project_instance": self.crr_prj, 
-            "project_type": self.crr_prj_type
+            "project_properties": self.crr_prj_properties
         }]
         self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
         # crr_proj = de.get_open_projects()
