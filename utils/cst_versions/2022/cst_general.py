@@ -20,6 +20,8 @@ class CSTHandler:
         self._projects_path = None
         self._template_path = None
         self._instance_path = None
+        self._padding = None
+        self._h_l_ratio_upper_bound = None
         self.crr_prj_properties = {
             "type": None, 
             "wavelegnth_min": None,
@@ -112,6 +114,18 @@ class CSTHandler:
         self._projects_path = cnf["projects_path"]
         self._template_path = cnf.get("template_path", _template_path)
         self._instance_path = cnf.get("instance_path", _instance_path)
+        drc = misc.configure_drc()
+        self._h_l_ratio_upper_bound = drc["h_l_ratio_upper_bound"]
+        units = drc.get("geometric_units", "um")
+        if units == "um":
+            self._padding = drc["padding"]
+        elif units == "mm":
+            self._padding = drc["padding"] * 1000
+        elif units == "nm":
+            self._padding = drc["padding"] / 1000
+        else:
+            print("[ERRO] Unsupported geometric units")
+            raise ValueError("Unsupported geometric units, could only be um, mm or nm")
 
 
     def close(self, force=False):

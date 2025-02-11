@@ -12,3 +12,7 @@ def add_cst_lib_path():
     lib_path = read_toml("./config/service.toml", "cst")["cst_py_lib_path"]
     sys.path.append(lib_path)
 
+
+def configure_drc():
+    drc_config = read_toml("./config/service.toml", "drc")
+    return drc_config

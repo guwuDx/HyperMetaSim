@@ -1,17 +1,17 @@
 from utils.macors_canva import Canvas
 
-def set_prj_wavelength(cst_app, wavelength_min, wavelength_max):
+def set_prj_wavelength(cst_handler, wavelength_min, wavelength_max):
     print(f"[INFO] Project wavelength would be set to {wavelength_min} - {wavelength_max}")
 
-    cst_app.crr_prj_properties["wavelegnth_min"] = wavelength_min
-    cst_app.crr_prj_properties["wavelegnth_max"] = wavelength_max
+    cst_handler.crr_prj_properties["wavelegnth_min"] = wavelength_min
+    cst_handler.crr_prj_properties["wavelegnth_max"] = wavelength_max
 
     canvas = Canvas()
     canvas.add_code("Solver", "WavelengthRange", wavelength_min, wavelength_max)
     
     print("[INFO] vba code to be executed:\n")
     canvas.preview()
-    res = canvas.send(cst_app)
+    res = canvas.send(cst_handler)
 
     if res:
         print("[ OK ] Project wavelength set successfully")
@@ -20,7 +20,7 @@ def set_prj_wavelength(cst_app, wavelength_min, wavelength_max):
         raise RuntimeError("Failed to set project wavelength")
 
 
-def define_material(cst_app, materials_path, material_name):
+def define_material(cst_handler, materials_path, material_name):
     print(f"[INFO] Defining material: {material_name}")
 
     canvas = Canvas()
@@ -95,7 +95,7 @@ def define_material(cst_app, materials_path, material_name):
     canvas.add_code("Material", "LatticeScattering", "Hole", "0.1", "0.")
     canvas.add_code("Material", "EffectiveMassForConductivity", "Electron", "0.25")
     canvas.add_code("Material", "EffectiveMassForConductivity", "Hole", "0.35")
-    canvas.add_code("Material", "Colour", "0.701961", "0.101961", "0.101961")
+    canvas.add_code("Material", "Colour", "0.701961", "0.301961", "0.301961")
     canvas.add_code("Material", "Wireframe", "False")
     canvas.add_code("Material", "Reflection", "False")
     canvas.add_code("Material", "Allowoutline", "True")
@@ -105,11 +105,32 @@ def define_material(cst_app, materials_path, material_name):
 
     # print("[INFO] vba code to be executed:\n")
     # canvas.preview()
-    res = canvas.send(cst_app)
+    res = canvas.send(cst_handler)
     if res:
         print(f"[ OK ] Material {material_name} defined successfully")
     else:
         print(f"[ERRO] Failed to define material {material_name}")
         raise RuntimeError(f"Failed to define material {material_name}")
+
+
+def update_param(cst_handler, force=False):
+    print("[INFO] Updating parameters ...")
+
+    canvas = Canvas()
+    vba_code = f"RebuildOnParametricChange \"{force}\", \"True\""
+    res = canvas.write_send(cst_handler, vba_code, None)
     return res
 
+
+def modify_param(cst_handler, param_name: str, value: int):
+    print(f"[INFO] Modifying parameter {param_name} to {value}")
+
+    canvas = Canvas()
+    vba_code = f"StoreParameter \"{param_name}\", \"{value}\""
+    res = canvas.write_send(cst_handler, vba_code, None)
+    if res:
+        print(f"[ OK ] Parameter {param_name} modified successfully")
+    else:
+        print(f"[ERRO] Failed to modify parameter {param_name}, please check whether the parameter exists")
+        raise RuntimeError(f"Failed to modify parameter {param_name}, please check whether the parameter exists")
+    update_param(cst_handler)

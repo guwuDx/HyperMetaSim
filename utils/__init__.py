@@ -6,7 +6,7 @@ print(f"[INFO] configued CST version: {version}")
 
 try:
     cst_general             = importlib.import_module(f"utils.cst_versions.{version}.cst_general")
-    para_operations         = importlib.import_module(f"utils.cst_versions.{version}.param_operations")
+    param_operations        = importlib.import_module(f"utils.cst_versions.{version}.param_operations")
     basic_operations        = importlib.import_module(f"utils.cst_versions.{version}.basic_operations")
     materials_operations    = importlib.import_module(f"utils.cst_versions.{version}.materials_operations")
 
