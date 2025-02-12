@@ -16,3 +16,8 @@ def add_cst_lib_path():
 def configure_drc():
     drc_config = read_toml("./config/service.toml", "drc")
     return drc_config
+
+
+def configure_acc_and_dc():
+    acc_dc_config = read_toml("./config/service.toml", "acc_dc")
+    return acc_dc_config

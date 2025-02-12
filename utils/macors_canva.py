@@ -93,4 +93,21 @@ class Canvas:
             f.write(vba_code)
 
 
+    class vba_template:
+
+        @staticmethod
+        def get_mode_num_by_name(port, mode_name):
+            return f"""
+Dim Num As Long
+With FloquetPort
+    .Port (\"{port}\")
+    success = .GetModeNumberByName (Num, \"{mode_name}\")
+End With
+
+If Not success Then
+    Err.Raise 1000, , \"Failed to get mode number by {mode_name}\"
+End If
+"""
+
+
 __all__ = ["Canvas"]

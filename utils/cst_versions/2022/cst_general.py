@@ -12,6 +12,21 @@ _instance_path = "/instances/"
 _projects_path = misc.read_toml("./config/service.toml", "cst")["projects_path"]
 
 class CSTHandler:
+    class _DRC:
+        padding = None
+        h_l_ratio_upper_bound = None
+
+
+    class _ACC_DC:
+        max_num_of_cpu_devs = None
+        max_threads = None
+        max_params_parallel = None
+        only_0D1D = None
+        use_shared_dir = None
+        use_dc_mem_setting = None
+        min_dc_mem_limit = None
+        remote_mesh = None
+
 
     def __init__(self, debug=False):
         self.de = None
@@ -20,8 +35,6 @@ class CSTHandler:
         self._projects_path = None
         self._template_path = None
         self._instance_path = None
-        self._padding = None
-        self._h_l_ratio_upper_bound = None
         self.crr_prj_properties = {
             "type": None, 
             "wavelegnth_min": None,
@@ -114,18 +127,32 @@ class CSTHandler:
         self._projects_path = cnf["projects_path"]
         self._template_path = cnf.get("template_path", _template_path)
         self._instance_path = cnf.get("instance_path", _instance_path)
+        
         drc = misc.configure_drc()
-        self._h_l_ratio_upper_bound = drc["h_l_ratio_upper_bound"]
+        self._DRC.h_l_ratio_upper_bound = drc["h_l_ratio_upper_bound"]
         units = drc.get("geometric_units", "um")
         if units == "um":
-            self._padding = drc["padding"]
+            self._DRC.padding = drc["padding"]
         elif units == "mm":
-            self._padding = drc["padding"] * 1000
+            self._DRC.padding = drc["padding"] * 1000
         elif units == "nm":
-            self._padding = drc["padding"] / 1000
+            self._DRC.padding = drc["padding"] / 1000
         else:
             print("[ERRO] Unsupported geometric units")
             raise ValueError("Unsupported geometric units, could only be um, mm or nm")
+
+        acc_dc = misc.configure_acc_and_dc()
+        self._ACC_DC.max_num_of_cpu_devs = acc_dc.get("max_num_of_cpu_devs", 1)
+        self._ACC_DC.max_threads = acc_dc.get("max_threads", 1024)
+
+        self._ACC_DC.max_params_parallel = acc_dc.get("max_params_parallel", 99)
+        self._ACC_DC.only_0D1D = acc_dc.get("only_0D1D", True)
+        self._ACC_DC.use_shared_dir = acc_dc.get("use_shared_dir", True)
+        self._ACC_DC.use_dc_mem_setting = acc_dc.get("use_dc_mem_setting", False)
+        self._ACC_DC.min_dc_mem_limit = acc_dc.get("min_dc_mem_limit", 0)
+        self._ACC_DC.remote_mesh = acc_dc.get("remote_mesh", False)
+
+        print("[ OK ] CST configurations read successfully")
 
 
     def close(self, force=False):
