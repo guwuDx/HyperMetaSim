@@ -45,6 +45,7 @@ class CSTHandler:
         if debug: self._conn_de()
         else: self._new_de()
 
+
     def _new_de(self):
         # cst_app = misc.cst_conn()
         # print(csti.DesignEnvironment)
@@ -153,6 +154,13 @@ class CSTHandler:
         self._ACC_DC.remote_mesh = acc_dc.get("remote_mesh", False)
 
         print("[ OK ] CST configurations read successfully")
+
+
+    def save_crr_prj(self):
+        print("[INFO] Saving current project ...")
+        self.crr_prj.save()
+        print("[ OK ] Project saved successfully")
+
 
 
     def close(self, force=False):

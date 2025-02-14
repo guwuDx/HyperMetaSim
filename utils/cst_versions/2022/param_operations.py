@@ -56,7 +56,7 @@ class SquarePillar:
         return parameters
 
 
-    def set_sweep_from_list(self, cst_handler, distributed=False, start_now=True):
+    def set_sweep_from_list(self, distributed=False, start_now=True):
         if self.sweep_list is None:
             print("[WARN] No sweep list is generated.")
             return
@@ -78,8 +78,15 @@ class SquarePillar:
         if start_now:
             print("[INFO] Setting completed, starting simulation ...")
             self.canvas.add_code(obj, "Start")
+        else:
+            print("[INFO] Setting completed, please start the simulation manually.")
 
-        print("[INFO] vba code to be executed:\n")
+        # print("[INFO] vba code to be executed:\n")
         self.canvas.preview()
-        res = self.canvas.send(cst_handler)
+        res = self.canvas.send(self.cst_handler)
         return res
+    
+
+    def start_sweep(self):
+        print("[INFO] Starting Parameter Sweep ...")
+        self.canvas.write_send(self.cst_handler, "ParameterSweep.Start")

@@ -53,7 +53,7 @@ class Canvas:
     def clear(self):
         self._clr_obj()
         self.vbac = []
-        self.vbac.append("Sub Main()")
+        self.vbac.append("Sub Main() \n AddToHistory (\"From Python Automation\", \"\n")
 
 
     def send(self, cst_app, timeout=None, clear=True):
@@ -65,11 +65,11 @@ class Canvas:
             cst_app (object): CST application handler object
         """
         self._write_obj()
-        self.vbac.append("End Sub\n")
+        self.vbac.append("\") \nEnd Sub\n")
         vba_code = "\n".join(self.vbac)
         res = cst_app.send_vba(vba_code, timeout)
         if clear: self.clear()
-        return res
+        return res # bool
 
 
     def write_send(self, cst_app, code, timeout=None):
@@ -80,14 +80,14 @@ class Canvas:
     def preview(self):
         preview_instance = copy.deepcopy(self)
         preview_instance._write_obj()
-        preview_instance.vbac.append("End Sub\n")
+        preview_instance.vbac.append("\") \nEnd Sub\n")
         vba_code = "\n".join(preview_instance.vbac)
         print(vba_code)
         return vba_code
 
 
     def write_to_file(self, file_path):
-        self.vbac.append("End Sub")
+        self.vbac.append("\") \nEnd Sub\n")
         vba_code = "\n".join(self.vbac)
         with open(file_path, 'w') as f:
             f.write(vba_code)
@@ -108,6 +108,5 @@ If Not success Then
     Err.Raise 1000, , \"Failed to get mode number by {mode_name}\"
 End If
 """
-
 
 __all__ = ["Canvas"]

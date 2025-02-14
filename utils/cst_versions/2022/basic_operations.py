@@ -144,7 +144,7 @@ def set_acc_dc(cst_handler, solver="FDSolver"):
     canvas.add_code(solver, "MPIParallelization", "False")
     canvas.add_code(solver, "UseDistributedComputing", "False")
     canvas.add_code(solver, "NetworkComputingStrategy", "RunRemote")
-    canvas.add_code(solver, "NetworkComputingJobCount", "3")
+    canvas.add_code(solver, "NetworkComputingJobCount", "99")
     canvas.add_code(solver, "UseParallelization", "True")
     canvas.add_code(solver, "MaxCPUs", cst_handler._ACC_DC.max_threads)
     canvas.add_code(solver, "MaximumNumberOfCPUDevices", cst_handler._ACC_DC.max_num_of_cpu_devs)
@@ -158,10 +158,12 @@ def set_acc_dc(cst_handler, solver="FDSolver"):
     else:
         canvas.write("UseDistributedComputingForParameters \"True\"")
         canvas.write(f"MaxNumberOfDistributedComputingParameters \"{cst_handler._ACC_DC.max_params_parallel}\"")
+        # canvas.write("ParameterSweep.UseDistributedComputing (True)")
     canvas.write(f"UseDistributedComputingMemorySetting \"{cst_handler._ACC_DC.use_dc_mem_setting}\"")
     canvas.write(f"MinDistributedComputingMemoryLimit \"{cst_handler._ACC_DC.min_dc_mem_limit}\"")
     canvas.write(f"UseDistributedComputingSharedDirectory \"{cst_handler._ACC_DC.use_shared_dir}\"")
     canvas.write(f"OnlyConsider0D1DResultsForDC \"{cst_handler._ACC_DC.only_0D1D}\"")
+
 
     canvas.preview()
     canvas.send(cst_handler)
