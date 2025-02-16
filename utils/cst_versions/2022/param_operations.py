@@ -33,6 +33,7 @@ class SquarePillar:
         wavelength_max = self.wavelength_max
         padding = self.padding
         h_l_ratio_upper_bound = self.h_l_ratio_upper_bound
+        print(f"[INFO] Generating Parameter Sweep List ...")
 
         # solve for the range of parameters according to the wavelength range
         p_min = floor((wavelength_min / 4) / p_step) * p_step
@@ -45,6 +46,7 @@ class SquarePillar:
                 for h in np.arange(max(h_step, padding), l * h_l_ratio_upper_bound, h_step):
                     parameters.append([p, h, l])
         parameters = np.around(parameters, decimals=3)
+        print(f"[INFO] {len(parameters)} parameters combinations were generated.")
 
         # save the list of parameters to a file if output_file_path is provided
         if output_file_path:
@@ -78,15 +80,39 @@ class SquarePillar:
         if start_now:
             print("[INFO] Setting completed, starting simulation ...")
             self.canvas.add_code(obj, "Start")
+            res = self.canvas.send(self.cst_handler, add_to_history=False)
         else:
             print("[INFO] Setting completed, please start the simulation manually.")
+            res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=True)
 
         # print("[INFO] vba code to be executed:\n")
-        self.canvas.preview()
-        res = self.canvas.send(self.cst_handler)
+        # self.canvas.preview()
         return res
     
 
-    def start_sweep(self):
-        print("[INFO] Starting Parameter Sweep ...")
-        self.canvas.write_send(self.cst_handler, "ParameterSweep.Start")
+    def set_params(self, 
+                   p:       int = None, # the Arrangement period of the metastructure
+                   h:       int = None, # the height of the pillar
+                   l:       int = None, # the length of the pillar
+                   phi:     int = None, # the azimuthal angle of the EM wave
+                   theta:   int = None  # the incident angle of the EM wave
+                   ):
+        print("[INFO] Setting parameters ...")
+        obj = "StoreParameter"
+
+        if p:
+            self.canvas.write(f"{obj} \"p\", \"{p}\"")
+        if h:
+            self.canvas.write(f"{obj} \"h\", \"{h}\"")
+        if l:
+            self.canvas.write(f"{obj} \"l\", \"{l}\"")
+        if phi:
+            self.canvas.write(f"{obj} \"phi\", \"{phi}\"")
+        if theta:
+            self.canvas.write(f"{obj} \"theta\", \"{theta}\"")
+        res = self.canvas.send(self.cst_handler, cmt="Set parameters")
+        if res:
+            print("[ OK ] Parameters set successfully")
+        else:
+            print("[ERRO] Failed to set parameters, please check whether the parameters exist")
+            raise RuntimeError("Failed to set parameters, please check whether the parameters exist")

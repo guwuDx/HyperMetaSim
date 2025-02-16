@@ -22,6 +22,15 @@ def set_prj_wavelength(cst_handler, wavelength_min, wavelength_max):
 
 def define_material(cst_handler, materials_path, material_name):
     print(f"[INFO] Defining material: {material_name}")
+    wl_min = cst_handler.crr_prj_properties["wavelegnth_min"]
+    wl_max = cst_handler.crr_prj_properties["wavelegnth_max"]
+    freq_min = 300 / wl_max # in THz
+    freq_max = 300 / wl_min # in THz
+
+    # Add tolerance
+    tolerance = 0.05
+    freq_min *= 1 - tolerance
+    freq_max *= 1 + tolerance
 
     canvas = Canvas()
     canvas.add_code("Material", "Reset")
@@ -82,6 +91,8 @@ def define_material(cst_handler, materials_path, material_name):
             if line.startswith("#"): continue
 
             freq, re, im = line.replace(" ", "").replace("\n", "").split(",")
+            if float(freq) < freq_min or float(freq) > freq_max:
+                continue
             canvas.add_code("Material", "AddDispersionFittingValueEps", freq, re, im, "1.0")
 
     canvas.add_code("Material", "UseGeneralDispersionEps", "True")
@@ -105,7 +116,7 @@ def define_material(cst_handler, materials_path, material_name):
 
     # print("[INFO] vba code to be executed:\n")
     # canvas.preview()
-    res = canvas.send(cst_handler)
+    res = canvas.send(cst_handler, cmt=f"Define material {material_name}")
     if res:
         print(f"[ OK ] Material {material_name} defined successfully")
     else:
@@ -164,9 +175,8 @@ def set_acc_dc(cst_handler, solver="FDSolver"):
     canvas.write(f"UseDistributedComputingSharedDirectory \"{cst_handler._ACC_DC.use_shared_dir}\"")
     canvas.write(f"OnlyConsider0D1DResultsForDC \"{cst_handler._ACC_DC.only_0D1D}\"")
 
-
     canvas.preview()
-    canvas.send(cst_handler)
+    canvas.send(cst_handler, "Set accerlation and distributed computing")
 
 
 def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
@@ -178,11 +188,23 @@ def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
 
     canvas.write(f"FDSolver.Stimulation \"{source_port}\", \"{mode}\"")
 
-    print("[INFO] vba code to be executed:\n")
     canvas.preview()
-    res = canvas.send(cst_handler)
+    res = canvas.send(cst_handler, "Set FDSolver")
     if res:
         print("[ OK ] FDSolver set successfully")
     else:
         print("[ERRO] Failed to set FDSolver, please check whether the mode/port exists")
         raise RuntimeError("Failed to set FDSolver, please check whether the mode/port exists")
+
+
+def exec_paramSweep(cst_handler):
+    print("[INFO] Executing parameter sweep ...")
+    canvas = Canvas()
+    canvas.write("ParameterSweep.Start")
+    canvas.preview(0)
+    res = canvas.send(cst_handler, add_to_history=False)
+    if res:
+        print("[INFO] Parameter sweep finished, please check the results")
+    else:
+        print("[ERRO] Failed to start parameter sweep")
+        raise RuntimeError("Failed to start parameter sweep")

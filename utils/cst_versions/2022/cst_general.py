@@ -31,10 +31,10 @@ class CSTHandler:
     def __init__(self, debug=False):
         self.de = None
         self.pid = None
-        self.crr_prj = None
         self._projects_path = None
         self._template_path = None
         self._instance_path = None
+        self.crr_prj = None
         self.crr_prj_properties = {
             "type": None, 
             "wavelegnth_min": None,

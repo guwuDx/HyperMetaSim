@@ -26,7 +26,7 @@ def main():
     ps.generate_sweep_squence(1, 1, 1)
     ps.set_sweep_from_list(distributed=True, start_now=False)
     cst.save_crr_prj()
-    ps.start_sweep()
+    basic_operations.exec_paramSweep(cst)
 
     # cst.close()
     print("Done")
