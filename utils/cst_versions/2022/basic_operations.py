@@ -166,10 +166,11 @@ def set_acc_dc(cst_handler, solver="FDSolver"):
     if cst_handler._ACC_DC.max_params_parallel <= 0:
         canvas.write("UseDistributedComputingForParameters \"False\"")
         canvas.write("MaxNumberOfDistributedComputingParameters \"1\"")
+        canvas.write("ParameterSweep.UseDistributedComputing \"False\"")
     else:
         canvas.write("UseDistributedComputingForParameters \"True\"")
         canvas.write(f"MaxNumberOfDistributedComputingParameters \"{cst_handler._ACC_DC.max_params_parallel}\"")
-        # canvas.write("ParameterSweep.UseDistributedComputing (True)")
+        canvas.write("ParameterSweep.UseDistributedComputing \"True\"")
     canvas.write(f"UseDistributedComputingMemorySetting \"{cst_handler._ACC_DC.use_dc_mem_setting}\"")
     canvas.write(f"MinDistributedComputingMemoryLimit \"{cst_handler._ACC_DC.min_dc_mem_limit}\"")
     canvas.write(f"UseDistributedComputingSharedDirectory \"{cst_handler._ACC_DC.use_shared_dir}\"")
@@ -183,8 +184,8 @@ def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
     print("[INFO] Setting up FDSolver ...")
     canvas = Canvas()
 
-    vbac = Canvas.vba_template.get_mode_num_by_name(source_port, mode)
-    canvas.write(vbac)
+    # vbac = Canvas.vba_template.get_mode_num_by_name(source_port, mode)
+    # canvas.write(vbac)
 
     canvas.write(f"FDSolver.Stimulation \"{source_port}\", \"{mode}\"")
 

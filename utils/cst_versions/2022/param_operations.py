@@ -58,7 +58,7 @@ class SquarePillar:
         return parameters
 
 
-    def set_sweep_from_list(self, distributed=False, start_now=True):
+    def set_sweep_from_list(self, start_now=True):
         if self.sweep_list is None:
             print("[WARN] No sweep list is generated.")
             return
@@ -75,7 +75,6 @@ class SquarePillar:
             self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "h", str(h))
             self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l))
         self.canvas.add_code(obj, "SetSimulationType", "Frequency")
-        self.canvas.add_code(obj, "UseDistributedComputing", str(distributed))
 
         if start_now:
             print("[INFO] Setting completed, starting simulation ...")
@@ -83,7 +82,7 @@ class SquarePillar:
             res = self.canvas.send(self.cst_handler, add_to_history=False)
         else:
             print("[INFO] Setting completed, please start the simulation manually.")
-            res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=True)
+            res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=False)
 
         # print("[INFO] vba code to be executed:\n")
         # self.canvas.preview()
