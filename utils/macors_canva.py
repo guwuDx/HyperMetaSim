@@ -18,13 +18,17 @@ class Canvas:
         self.vbac.append(code)
 
 
-    def add_code(self, obj_name, key, *values):
+    def add_code(self, obj_name, key, *values, adapt=True):
         if obj_name not in self.objs:
             self.objs[obj_name] = []
 
         if values:
-            value_str = "\"\", \"\"".join(list(map(str, values))) # convert to string
-            code = f"  .{key} \"\"{value_str}\"\""
+            if adapt:
+                value_str = "\"\", \"\"".join(list(map(str, values))) # convert to string
+                code = f"  .{key} \"\"{value_str}\"\""
+            else:
+                value_str = "\", \"".join(list(map(str, values)))
+                code = f"  .{key} \"{value_str}\""
         else:
             code = f"  .{key}"
 
@@ -115,7 +119,7 @@ class Canvas:
             vba_code = self.vba_template.add_send_frame(vba_code)
             print(vba_code)
         else:
-            preview_instance._write_obj(adapt=add_to_history)
+            preview_instance._write_obj(adapt=False)
             vba_code = "\n".join(preview_instance.vbac)
             vba_code = f"Sub Main()\n{vba_code}\nEnd Sub"
             print(vba_code)

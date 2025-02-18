@@ -70,18 +70,20 @@ class SquarePillar:
         for i, parameter in enumerate(self.sweep_list):
             seq = "seq" + str(i)
             p, h, l = parameter
-            self.canvas.add_code(obj, "AddSequence", seq)
-            self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p))
-            self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "h", str(h))
-            self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l))
-        self.canvas.add_code(obj, "SetSimulationType", "Frequency")
+            self.canvas.add_code(obj, "AddSequence", seq                                , adapt=False)
+            self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p)  , adapt=False)
+            self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "h", str(h)  , adapt=False)
+            self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l)  , adapt=False)
+        self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
 
         if start_now:
             print("[INFO] Setting completed, starting simulation ...")
             self.canvas.add_code(obj, "Start")
+            self.canvas.preview(0)
             res = self.canvas.send(self.cst_handler, add_to_history=False)
         else:
             print("[INFO] Setting completed, please start the simulation manually.")
+            self.canvas.preview(0)
             res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=False)
 
         # print("[INFO] vba code to be executed:\n")

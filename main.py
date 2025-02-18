@@ -20,7 +20,7 @@ def main():
     canvas = Canvas()
 
     ps = param_operations.SquarePillar(cst)
-    ps.generate_sweep_squence(0.5, 0.5, 0.25)
+    ps.generate_sweep_squence(2, 2, 2)
     ps.set_sweep_from_list(start_now=False)
     cst.save_crr_prj()
     basic_operations.exec_paramSweep(cst)
