@@ -5,9 +5,6 @@ from utils import materials_operations
 from utils import param_operations
 from utils.macors_canva import Canvas
 
-import pythoncom
-pythoncom.CoInitialize()
-
 def main():
 
     print("<<<<<<<<<<<<<<< CST Automation >>>>>>>>>>>>>>>")
@@ -24,7 +21,7 @@ def main():
 
     ps = param_operations.SquarePillar(cst)
     ps.generate_sweep_squence(0.5, 0.5, 0.25)
-    ps.set_sweep_from_list(distributed=True, start_now=False)
+    ps.set_sweep_from_list(start_now=False)
     cst.save_crr_prj()
     basic_operations.exec_paramSweep(cst)
 
