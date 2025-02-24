@@ -2,7 +2,6 @@ numpy==2.0.2
 pandas==2.2.3
 python-dateutil==2.9.0.post0
 pytz==2025.1
-pywin32==308
 six==1.17.0
 toml==0.10.2
 tzdata==2025.1

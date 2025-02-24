@@ -66,7 +66,7 @@ class SquarePillar:
         print("[INFO] Setting up Parameter Sweep ...")
         obj = "ParameterSweep"
 
-        self.canvas.add_code(obj, "DeleteAllSequences")
+        self.canvas.add_code(obj, "DeleteAllSequences", adapt=False)
         for i, parameter in enumerate(self.sweep_list):
             seq = "seq" + str(i)
             p, h, l = parameter
@@ -89,7 +89,46 @@ class SquarePillar:
         # print("[INFO] vba code to be executed:\n")
         # self.canvas.preview()
         return res
-    
+
+
+    def set_sweep_from_range(self,
+                             p_start:   int  = None,
+                             p_end:     int  = None,
+                             p_step:    int  = None,
+                             h_step:    int  = None,
+                             l_step:    int  = None,
+                             start_now: bool = True):
+
+        if not p_step or not h_step or not l_step:
+            print("[ERRO] Step size of the parameters is not specified.")
+            raise ValueError("Step size of the parameters is not specified.")
+
+        padding = self.padding
+        h_l_ratio_upper_bound = self.h_l_ratio_upper_bound
+        print(f"[INFO] Generating Parameter Sweep List ...")
+        obj = "ParameterSweep"
+        self.canvas.add_code(obj, "DeleteAllSequences", adapt=False)
+
+        if p_start is None or p_end is None:
+            print("[WARN] Arrangement period range is not specified, all periods will be considered.")
+            print("[WARN] This method is not recommended for large/long wavelength range.")
+
+            wavelength_min = self.wavelength_min
+            wavelength_max = self.wavelength_max
+            p_start = floor((wavelength_min / 4) / p_step) * p_step
+            p_end = ceil((wavelength_max / 2) / p_step) * p_step
+
+        for p in np.arange(p_start, p_end, p_step):
+            for l in np.arange(l_step, p - 2 * padding, l_step):
+                h_start = max(h_step, padding)
+                h_end = l * h_l_ratio_upper_bound
+                seq = f"seq_p{p}_l{l}"
+                self.canvas.add_code(obj, "AddSequence", seq                                        , adapt=False)
+                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p)          , adapt=False)
+                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l)          , adapt=False)
+                self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "h", h_start, h_end, h_step, adapt=False)
+        self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
+
 
     def set_params(self, 
                    p:       int = None, # the Arrangement period of the metastructure
