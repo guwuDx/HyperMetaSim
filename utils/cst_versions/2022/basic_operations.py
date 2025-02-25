@@ -1,5 +1,7 @@
 from utils.macors_canva import Canvas
 
+
+
 def set_prj_wavelength(cst_handler, wavelength_min, wavelength_max):
     print(f"[INFO] Project wavelength would be set to {wavelength_min} - {wavelength_max}")
 
@@ -124,12 +126,18 @@ def define_material(cst_handler, materials_path, material_name):
         raise RuntimeError(f"Failed to define material {material_name}")
 
 
-def update_param(cst_handler, force=False):
+def update_params(cst_handler, force=False):
     print("[INFO] Updating parameters ...")
 
     canvas = Canvas()
     vba_code = f"RebuildOnParametricChange \"{force}\", \"True\""
     res = canvas.write_send(cst_handler, vba_code, None)
+
+    if res:
+        print("[ OK ] Parameters updated successfully")
+    else:
+        print("[ERRO] Failed to update parameters")
+        raise RuntimeError("Failed to update parameters")
     return res
 
 
@@ -144,7 +152,7 @@ def modify_param(cst_handler, param_name: str, value: int):
     else:
         print(f"[ERRO] Failed to modify parameter {param_name}, please check whether the parameter exists")
         raise RuntimeError(f"Failed to modify parameter {param_name}, please check whether the parameter exists")
-    update_param(cst_handler)
+    update_params(cst_handler)
 
 
 def set_acc_dc(cst_handler, solver="FDSolver"):

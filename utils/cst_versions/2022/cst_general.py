@@ -28,6 +28,10 @@ class CSTHandler:
         remote_mesh = None
 
 
+    class _TimeOut:
+        solver = None
+
+
     def __init__(self, debug=False):
         self.de = None
         self.pid = None
@@ -42,6 +46,7 @@ class CSTHandler:
         }
         self.prjs = pd.DataFrame(columns=["project_instance", "project_properties"])
         self._get_cnf()
+
         if debug: self._conn_de()
         else: self._new_de()
 
@@ -96,7 +101,11 @@ class CSTHandler:
         self.crr_prj_properties["type"] = metastructure_type
 
 
-    def instantiate_template(self, project_name, wavelength_min, wavelength_max):
+    def instantiate_template(self,
+                             project_name,
+                             wavelength_min,
+                             wavelength_max
+                             ):
         from utils import basic_operations
 
         crr_prj_type = self.crr_prj_properties["type"]
@@ -118,8 +127,34 @@ class CSTHandler:
         # print(crr_proj[0], '\n---')
 
 
-    def send_vba(self, vba_code, timeout=None):
+    def send_vba(self,
+                 vba_code: str = None,
+                 timeout: int = None
+                 ):
+
+        if not vba_code:
+            print("[WARN] No VBA code is provided")
+            return
         return self.crr_prj.schematic.execute_vba_code(vba_code, timeout=timeout)
+
+
+    def run_solver(self,
+                   prj=None,
+                   blocked: bool = True,
+                   timeout: int = None
+                   ):
+
+        if not prj:
+            prj = self.crr_prj
+
+        if blocked:
+            print("[INFO] Running Solver in Foreground ...")
+            prj.modeler.run_solver(timeout=timeout)
+            print("[ OK ] Solver finished successfully")
+        else:
+            print("[INFO] Running Solver in Background ...")
+            prj.modeler.start_solver(timeout=timeout)
+            print("[INFO] the simulation is submitted to the solver")
 
 
     def _get_cnf(self):
@@ -153,6 +188,8 @@ class CSTHandler:
         self._ACC_DC.min_dc_mem_limit = acc_dc.get("min_dc_mem_limit", 0)
         self._ACC_DC.remote_mesh = acc_dc.get("remote_mesh", False)
 
+        self._TimeOut.solver = cnf.get("solver_timeout", 300)
+
         print("[ OK ] CST configurations read successfully")
 
 
@@ -160,7 +197,6 @@ class CSTHandler:
         print("[INFO] Saving current project ...")
         self.crr_prj.save()
         print("[ OK ] Project saved successfully")
-
 
 
     def close(self, force=False):

@@ -20,9 +20,10 @@ def main():
     canvas = Canvas()
 
     ps = param_operations.SquarePillar(cst)
-    ps.generate_sweep_squence(2, 2, 2)
-    ps.set_sweep_from_list(start_now=False)
-    cst.save_crr_prj()
+    # ps.generate_sweep_squence(1, 1, 0.1)
+    # ps.set_sweep_from_list(start_now=False)
+    ps.set_sweep_from_range(2.5, 5, 0.5, 0.5, 0.2, start_now=False)
+    # cst.save_crr_prj()
     basic_operations.exec_paramSweep(cst)
 
     # cst.close()

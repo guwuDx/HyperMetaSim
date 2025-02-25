@@ -2,6 +2,8 @@ import numpy as np
 from math import ceil, floor
 from utils.macors_canva import Canvas
 
+from utils import basic_operations
+
 
 
 class SquarePillar:
@@ -58,7 +60,9 @@ class SquarePillar:
         return parameters
 
 
-    def set_sweep_from_list(self, start_now=True):
+    def set_sweep_from_list(self,
+                            start_now=True
+                            ):
         if self.sweep_list is None:
             print("[WARN] No sweep list is generated.")
             return
@@ -77,14 +81,26 @@ class SquarePillar:
         self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
 
         if start_now:
+            self.cst_handler.save_crr_prj()
             print("[INFO] Setting completed, starting simulation ...")
-            self.canvas.add_code(obj, "Start")
-            self.canvas.preview(0)
+            self.canvas.add_code(obj, "Start", adapt=False)
+            # self.canvas.preview(0)
             res = self.canvas.send(self.cst_handler, add_to_history=False)
+            if res:
+                print("[INFO] Parameter sweep finished, please check the results.")
+            else:
+                print("[ERRO] Failed to start the simulation, please check the parameters.")
+                raise RuntimeError("Failed to start the simulation, please check the parameters.")
         else:
             print("[INFO] Setting completed, please start the simulation manually.")
-            self.canvas.preview(0)
+            # self.canvas.preview(0)
             res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=False)
+            if res:
+                print("[INFO] Parameter sweep set successfully")
+            else:
+                print("[ERRO] Failed to set up the parameter sweep, please check the parameters.")
+                raise RuntimeError("Failed to set up the parameter sweep, please check the parameters.")
+            self.cst_handler.save_crr_prj()
 
         # print("[INFO] vba code to be executed:\n")
         # self.canvas.preview()
@@ -118,16 +134,43 @@ class SquarePillar:
             p_start = floor((wavelength_min / 4) / p_step) * p_step
             p_end = ceil((wavelength_max / 2) / p_step) * p_step
 
+        i = 0
         for p in np.arange(p_start, p_end, p_step):
             for l in np.arange(l_step, p - 2 * padding, l_step):
+                p_around = np.around(p, decimals=3)
+                l_around = np.around(l, decimals=3)
                 h_start = max(h_step, padding)
-                h_end = l * h_l_ratio_upper_bound
-                seq = f"seq_p{p}_l{l}"
+                h_end = min(l_around * h_l_ratio_upper_bound, 2 * padding * h_l_ratio_upper_bound)
+                seq = f"seq_p{p_around}_l{l_around}"
                 self.canvas.add_code(obj, "AddSequence", seq                                        , adapt=False)
-                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p)          , adapt=False)
-                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l)          , adapt=False)
+                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p_around)   , adapt=False)
+                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l_around)   , adapt=False)
                 self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "h", h_start, h_end, h_step, adapt=False)
+                i += (h_end - h_start) / h_step
+        print(f"[INFO] {i} parameters combinations were generated.")
         self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
+
+        if start_now:
+            self.cst_handler.save_crr_prj()
+            print("[INFO] Setting completed, starting simulation ...")
+            self.canvas.add_code(obj, "Start", adapt=False)
+            # self.canvas.preview(0)
+            res = self.canvas.send(self.cst_handler, add_to_history=False)
+            if res:
+                print("[INFO] Parameter sweep finished, please check the results.")
+            else:
+                print("[ERRO] Failed to start the simulation, please check the parameters.")
+                raise RuntimeError("Failed to start the simulation, please check the parameters.")
+        else:
+            print("[INFO] Setting completed, please start the simulation manually.")
+            # self.canvas.preview(0)
+            res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=False)
+            if res:
+                print("[INFO] Parameter sweep set successfully")
+            else:
+                print("[ERRO] Failed to set up the parameter sweep, please check the parameters.")
+                raise RuntimeError("Failed to set up the parameter sweep, please check the parameters.")
+            self.cst_handler.save_crr_prj()
 
 
     def set_params(self, 
@@ -153,6 +196,21 @@ class SquarePillar:
         res = self.canvas.send(self.cst_handler, cmt="Set parameters")
         if res:
             print("[ OK ] Parameters set successfully")
+            # basic_operations.update_params(self.cst_handler)
         else:
             print("[ERRO] Failed to set parameters, please check whether the parameters exist")
             raise RuntimeError("Failed to set parameters, please check whether the parameters exist")
+
+
+    def simulate_param_combination(self, 
+                   p:       int  = None,    # the Arrangement period of the metastructure
+                   h:       int  = None,    # the height of the pillar
+                   l:       int  = None,    # the length of the pillar
+                   phi:     int  = None,    # the azimuthal angle of the EM wave
+                   theta:   int  = None,    # the incident angle of the EM wave
+                   blocked: bool = False,   # whether to block the simulation
+                   timeout: int  = None     # the timeout of the simulation
+                   ):
+        print("[INFO] Simulating parameters ...")
+        self.set_params(p, h, l, phi, theta)
+        self.cst_handler.run_solver(blocked=blocked, timeout=timeout)
