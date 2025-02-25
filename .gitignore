@@ -6,3 +6,5 @@ prjs/*
 *.pyo
 *.pyd
 __pycache__/
+
+venv/*
