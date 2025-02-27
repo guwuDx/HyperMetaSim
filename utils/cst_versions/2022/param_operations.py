@@ -2,7 +2,7 @@ import numpy as np
 from math import ceil, floor
 from utils.macors_canva import Canvas
 
-from utils import basic_operations
+# from utils import basic_operations
 
 
 
@@ -140,13 +140,14 @@ class SquarePillar:
                 p_around = np.around(p, decimals=3)
                 l_around = np.around(l, decimals=3)
                 h_start = max(h_step, padding)
-                h_end = min(l_around * h_l_ratio_upper_bound, 2 * padding * h_l_ratio_upper_bound)
+                h_end = np.around((min(l_around * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+
                 seq = f"seq_p{p_around}_l{l_around}"
                 self.canvas.add_code(obj, "AddSequence", seq                                        , adapt=False)
                 self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p_around)   , adapt=False)
                 self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l_around)   , adapt=False)
                 self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "h", h_start, h_end, h_step, adapt=False)
-                i += (h_end - h_start) / h_step
+                i += ceil((h_end - h_start + 1) / h_step)
         print(f"[INFO] {i} parameters combinations were generated.")
         self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
 
@@ -208,7 +209,7 @@ class SquarePillar:
                    l:       int  = None,    # the length of the pillar
                    phi:     int  = None,    # the azimuthal angle of the EM wave
                    theta:   int  = None,    # the incident angle of the EM wave
-                   blocked: bool = False,   # whether to block the simulation
+                   blocked: bool = True,    # whether to block the simulation
                    timeout: int  = None     # the timeout of the simulation
                    ):
         print("[INFO] Simulating parameters ...")

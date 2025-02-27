@@ -30,7 +30,7 @@ def define_material(cst_handler, materials_path, material_name):
     freq_max = 300 / wl_min # in THz
 
     # Add tolerance
-    tolerance = 0.05
+    tolerance = 0.02
     freq_min *= 1 - tolerance
     freq_max *= 1 + tolerance
 

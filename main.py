@@ -5,12 +5,14 @@ from utils import materials_operations
 from utils import param_operations
 from utils.macors_canva import Canvas
 
+import numpy as np
+
 def main():
 
     print("<<<<<<<<<<<<<<< CST Automation >>>>>>>>>>>>>>>")
     cst = cst_general.CSTHandler()
     cst.open_template("SquarePillar")
-    cst.instantiate_template("SquarePillar_inst", 10, 14)
+    cst.instantiate_template("SquarePillar_inst", 8, 14)
     basic_operations.define_material(cst, "materials", "freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
     materials_operations.SquarePillar(cst).change_substrate("freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
     materials_operations.SquarePillar(cst).change_pillar("freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
@@ -19,12 +21,14 @@ def main():
     basic_operations.set_FDSolver_source(cst, "Zmin", "TM(0,0)")
     canvas = Canvas()
 
-    ps = param_operations.SquarePillar(cst)
-    # ps.generate_sweep_squence(1, 1, 0.1)
-    # ps.set_sweep_from_list(start_now=False)
-    ps.set_sweep_from_range(2.5, 5, 0.5, 0.5, 0.2, start_now=False)
+    sp_params = param_operations.SquarePillar(cst)
+    # sp_params.generate_sweep_squence(1, 1, 0.1)
+    # sp_params.set_sweep_from_list(start_now=False)
+    sp_params.set_sweep_from_range(5.5, 8, 0.5, 0.25, 0.1, start_now=False)
     # cst.save_crr_prj()
     basic_operations.exec_paramSweep(cst)
+    # for i in np.arange(0.5, 4.5, 0.5):
+    #     sp_params.simulate_param_combination(5, 3, i, 0, 0, True, None)
 
     # cst.close()
     print("Done")
