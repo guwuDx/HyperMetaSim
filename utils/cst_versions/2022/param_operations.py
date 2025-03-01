@@ -1,5 +1,8 @@
 import numpy as np
+import os
 from math import ceil, floor
+from tqdm import tqdm
+
 from utils.macors_canva import Canvas
 
 # from utils import basic_operations
@@ -215,3 +218,94 @@ class SquarePillar:
         print("[INFO] Simulating parameters ...")
         self.set_params(p, h, l, phi, theta)
         self.cst_handler.run_solver(blocked=blocked, timeout=timeout)
+
+
+    def calculate_combination_num(self,
+                                  p_start: int = None,
+                                  p_end:   int = None,
+                                  p_step:  int = None,
+                                  h_step:  int = None,
+                                  l_step:  int = None):
+        
+        if not p_step or not h_step or not l_step:
+            print("[WARN] Step size of the parameters is not specified.")
+            return
+        
+        padding = self.padding
+        h_l_ratio_upper_bound = self.h_l_ratio_upper_bound
+
+        if p_start is None or p_end is None:
+            print("[WARN] Arrangement period range is not specified, all periods will be considered.")
+            print("[WARN] This method is not recommended for large/long wavelength range.")
+            
+            wavelength_min = self.wavelength_min
+            wavelength_max = self.wavelength_max
+            p_start = floor((wavelength_min / 4) / p_step) * p_step
+            p_end = ceil((wavelength_max / 2) / p_step) * p_step
+
+        i = 0
+        for p in np.arange(p_start, p_end + p_step, p_step):
+            p_around = np.around(p, decimals=3)
+            for l in np.arange(l_step, (p_around - 2 * padding) + l_step, l_step):
+                l_around = np.around(l, decimals=3)
+                h_start = max(h_step, padding)
+                h_end = np.around((min(l_around * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+
+                i += ceil((h_end - h_start + 1) / h_step)
+
+        print(f"[INFO] {i} parameters combinations will be simulated.")
+        return i
+
+
+    def py_sweep_from_range(self,
+                             p_start:       int  = None,
+                             p_end:         int  = None,
+                             p_step:        int  = None,
+                             h_step:        int  = None,
+                             l_step:        int  = None,
+                             timeout_once:  int  = None):
+
+        if not p_step or not h_step or not l_step:
+            print("[ERRO] Step size of the parameters is not specified.")
+            raise ValueError("Step size of the parameters is not specified.")
+        
+        padding = self.padding
+        h_l_ratio_upper_bound = self.h_l_ratio_upper_bound
+        print(f"[INFO] Preparing to sweep parameters ...")
+        
+        if p_start is None or p_end is None:
+            print("[WARN] Arrangement period range is not specified, all periods will be considered.")
+            print("[WARN] This method is not recommended for large/long wavelength range.")
+            
+            wavelength_min = self.wavelength_min
+            wavelength_max = self.wavelength_max
+            p_start = floor((wavelength_min / 4) / p_step) * p_step
+            p_end = ceil((wavelength_max / 2) / p_step) * p_step
+
+        # get the terminal width
+        term_width = os.get_terminal_size().columns
+        tqdm_ncols = max(40, term_width - 20)
+
+        total = self.calculate_combination_num(p_start, p_end, p_step, h_step, l_step)
+        with tqdm(total=total, desc="Sweeping Parameters", ncols=tqdm_ncols) as pbar:
+            for p in np.arange(p_start, p_end + p_step, p_step):
+                for l in np.arange(l_step, (p - 2 * padding) + l_step, l_step):
+                    p_around = np.around(p, decimals=3)
+                    l_around = np.around(l, decimals=3)
+                    h_start = max(h_step, padding)
+                    h_end = np.around((min(l_around * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+
+                    for h in np.arange(h_start, h_end + h_step, h_step):
+                        h_around = np.around(h, decimals=3)
+                        print(f"[INFO] Simulating parameters combination:\n p = {p_around}, h = {h_around}, l = {l_around}")
+
+                        self.simulate_param_combination(p = p_around,
+                                                        h = h_around,
+                                                        l = l_around,
+                                                        phi = 0,
+                                                        theta = 0,
+                                                        blocked = True,
+                                                        timeout = timeout_once)
+            pbar.update(1)
+
+        print(f"[INFO] All {total} parameters combinations have been simulated.")
