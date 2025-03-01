@@ -2,6 +2,7 @@ from utils import misc
 
 import pandas as pd
 import os
+import time
 
 misc.add_cst_lib_path()
 from cst.interface import DesignEnvironment, Project
@@ -140,17 +141,40 @@ class CSTHandler:
 
     def run_solver(self,
                    prj=None,
-                   blocked: bool = True,
-                   timeout: int = None
+                   blocked:     bool = True,
+                   timeout:     int  = None,
+                   safe_mode:   bool = True
                    ):
 
         if not prj:
             prj = self.crr_prj
 
         if blocked:
-            print("[INFO] Running Solver in Foreground ...")
-            prj.modeler.run_solver(timeout=timeout)
-            print("[ OK ] Solver finished successfully")
+            if safe_mode and timeout:
+                print("[INFO] Running Solver in safe mode with timeout ...")
+
+                watch_dog = 0
+                prj.modeler.start_solver(timeout=None)
+                time.sleep(5)
+                while True:
+                    if prj.modeler.is_solver_running():
+                        print(".", end="")
+                        time.sleep(1)
+                        watch_dog += 1
+                        if watch_dog >= timeout:
+                            print()
+                            print("[WARN] Timeout reached, Aborting ...")
+                            prj.modeler.abort_solver()
+                            print("[ OK ] Solver aborted successfully")
+                            break
+                    else:
+                        print()
+                        print("[ OK ] Solver finished")
+                        break
+            else:
+                print("[INFO] Running Solver in Foreground ...")
+                prj.modeler.run_solver(timeout=timeout)
+                print("[ OK ] Solver finished")
         else:
             print("[INFO] Running Solver in Background ...")
             prj.modeler.start_solver(timeout=timeout)

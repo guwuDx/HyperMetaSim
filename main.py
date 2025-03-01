@@ -12,7 +12,7 @@ def main():
     print("<<<<<<<<<<<<<<< CST Automation >>>>>>>>>>>>>>>")
     cst = cst_general.CSTHandler()
     cst.open_template("SquarePillar")
-    cst.instantiate_template("SquarePillar_inst", 8, 14)
+    cst.instantiate_template("SquarePillar__surface_inst", 8, 14)
     basic_operations.define_material(cst, "materials", "freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
     materials_operations.SquarePillar(cst).change_substrate("freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
     materials_operations.SquarePillar(cst).change_pillar("freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
@@ -29,7 +29,7 @@ def main():
     # for i in np.arange(0.5, 4.5, 0.25):
     #     sp_params.simulate_param_combination(5, 3, i, 0, 0, True, None)
 
-    sp_params.py_sweep_from_range(1, 2.25, 0.25, 0.25, 0.01, timeout_once=300000)
+    sp_params.py_sweep_from_range(1, 2.25, 0.25, 0.25, 0.01, timeout_once=30)
 
     # cst.close()
     print("Done")
