@@ -1,0 +1,26 @@
+[cst]
+cst_py_lib_path = "/Path/To/CST Studio Suite 2022/AMD64/python_cst_libraries"
+projects_path = "/Path/To/Prjs"
+version = 2022
+# template_path = "templates/"    # relative path to the projects_path
+# instance_path = "instances/"    # relative path to the projects_path
+vba_save_path = "logs/vba/"       # relative path to the projects_path
+materials_path = "materials/"     # relative path to the projects_path
+solver_timeout = 300              # in seconds
+
+
+[drc]
+# geometric_units = "um"
+padding = 0.04
+h_l_ratio_upper_bound = 10
+
+
+[acc_dc]
+max_num_of_cpu_devs = 2
+max_treads = 1024
+max_params_parallel = 0
+only_0D1D = false
+use_shared_dir = false
+use_dc_mem_setting = false
+min_dc_mem_limit = 0
+remote_mesh = false
