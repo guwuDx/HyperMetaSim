@@ -24,12 +24,12 @@ def main():
     sp_params = param_operations.SquarePillar(cst)
     # sp_params.generate_sweep_squence(1, 1, 0.1)
     # sp_params.set_sweep_from_list(start_now=False)
-    # sp_params.set_sweep_from_range(5.5, 8, 0.5, 0.25, 0.1, start_now=False)
-    # basic_operations.exec_paramSweep(cst)
+    sp_params.set_sweep_from_range(2, 2.25, 0.25, 0.25, 0.01, start_now=False)
+    basic_operations.exec_paramSweep(cst)
     # for i in np.arange(0.5, 4.5, 0.25):
     #     sp_params.simulate_param_combination(5, 3, i, 0, 0, True, None)
 
-    sp_params.py_sweep_from_range(1, 2.25, 0.25, 0.25, 0.01, timeout_once=30)
+    # sp_params.py_sweep_from_range(1, 2.25, 0.25, 0.25, 0.01, timeout_once=30)
 
     # cst.close()
     print("Done")
