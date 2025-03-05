@@ -1,5 +1,7 @@
 from utils.macors_canva import Canvas
 
+import threading
+
 
 
 def set_prj_wavelength(cst_handler, wavelength_min, wavelength_max):
@@ -204,6 +206,12 @@ def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
     else:
         print("[ERRO] Failed to set FDSolver, please check whether the mode/port exists")
         raise RuntimeError("Failed to set FDSolver, please check whether the mode/port exists")
+
+
+def cpu_monitor(interval:   int = 1,    # additonal check interval
+                threshold:  int = 6,    # threshold for the CPU occupancy rate
+                confidence: int = 10    # confidence level
+                ):
 
 
 def exec_paramSweep(cst_handler):
