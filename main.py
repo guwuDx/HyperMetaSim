@@ -1,5 +1,5 @@
 from utils import misc
-from utils import cst_general
+from utils import cst_handler
 from utils import basic_operations
 from utils import materials_operations
 from utils import param_operations
@@ -10,7 +10,7 @@ import numpy as np
 def main():
 
     print("<<<<<<<<<<<<<<< CST Automation >>>>>>>>>>>>>>>")
-    cst = cst_general.CSTHandler()
+    cst = cst_handler.CSTHandler()
     cst.open_template("SquarePillar")
     cst.instantiate_template("SquarePillar__surface_inst", 8, 14)
     basic_operations.define_material(cst, "materials", "freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
@@ -25,7 +25,7 @@ def main():
     # sp_params.generate_sweep_squence(1, 1, 0.1)
     # sp_params.set_sweep_from_list(start_now=False)
     sp_params.set_sweep_from_range(2, 2.25, 0.25, 0.25, 0.01, start_now=False)
-    basic_operations.exec_paramSweep(cst)
+    basic_operations.exec_paramSweep_safe(cst)
     # for i in np.arange(0.5, 4.5, 0.25):
     #     sp_params.simulate_param_combination(5, 3, i, 0, 0, True, None)
 

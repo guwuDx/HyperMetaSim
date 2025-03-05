@@ -33,7 +33,7 @@ class CSTHandler:
         solver = None
 
 
-    def __init__(self, debug=False):
+    def __init__(self, pid=None):
         self.de = None
         self.pid = None
         self._projects_path = None
@@ -48,8 +48,9 @@ class CSTHandler:
         self.prjs = pd.DataFrame(columns=["project_instance", "project_properties"])
         self._get_cnf()
 
-        if debug: self._conn_de()
+        if pid: self._conn_de(pid)
         else: self._new_de()
+        print(self.de.version())
 
 
     def _new_de(self):
@@ -77,8 +78,8 @@ class CSTHandler:
         self.pid = de.pid()
 
 
-    def _conn_de(self):
-        self.de = DesignEnvironment.connect_to_any_or_new()
+    def _conn_de(self, pid):
+        self.de = DesignEnvironment.connect(pid)
 
 
     def open_template(self, metastructure_type):

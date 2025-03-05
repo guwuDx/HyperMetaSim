@@ -1,21 +1,28 @@
 from utils.macors_canva import Canvas
+from utils import cst_handler
 
-import threading
+from multiprocessing import Process
+import os
+import sys
+import time
+import psutil
+import platform
+import contextlib
 
 
 
-def set_prj_wavelength(cst_handler, wavelength_min, wavelength_max):
+def set_prj_wavelength(csth, wavelength_min, wavelength_max):
     print(f"[INFO] Project wavelength would be set to {wavelength_min} - {wavelength_max}")
 
-    cst_handler.crr_prj_properties["wavelegnth_min"] = wavelength_min
-    cst_handler.crr_prj_properties["wavelegnth_max"] = wavelength_max
+    csth.crr_prj_properties["wavelegnth_min"] = wavelength_min
+    csth.crr_prj_properties["wavelegnth_max"] = wavelength_max
 
     canvas = Canvas()
     canvas.add_code("Solver", "WavelengthRange", wavelength_min, wavelength_max)
     
     print("[INFO] vba code to be executed:\n")
     canvas.preview()
-    res = canvas.send(cst_handler)
+    res = canvas.send(csth)
 
     if res:
         print("[ OK ] Project wavelength set successfully")
@@ -24,10 +31,10 @@ def set_prj_wavelength(cst_handler, wavelength_min, wavelength_max):
         raise RuntimeError("Failed to set project wavelength")
 
 
-def define_material(cst_handler, materials_path, material_name):
+def define_material(csth, materials_path, material_name):
     print(f"[INFO] Defining material: {material_name}")
-    wl_min = cst_handler.crr_prj_properties["wavelegnth_min"]
-    wl_max = cst_handler.crr_prj_properties["wavelegnth_max"]
+    wl_min = csth.crr_prj_properties["wavelegnth_min"]
+    wl_max = csth.crr_prj_properties["wavelegnth_max"]
     freq_min = 300 / wl_max # in THz
     freq_max = 300 / wl_min # in THz
 
@@ -120,7 +127,7 @@ def define_material(cst_handler, materials_path, material_name):
 
     # print("[INFO] vba code to be executed:\n")
     # canvas.preview()
-    res = canvas.send(cst_handler, cmt=f"Define material {material_name}")
+    res = canvas.send(csth, cmt=f"Define material {material_name}")
     if res:
         print(f"[ OK ] Material {material_name} defined successfully")
     else:
@@ -128,12 +135,12 @@ def define_material(cst_handler, materials_path, material_name):
         raise RuntimeError(f"Failed to define material {material_name}")
 
 
-def update_params(cst_handler, force=False):
+def update_params(csth, force=False):
     print("[INFO] Updating parameters ...")
 
     canvas = Canvas()
     vba_code = f"RebuildOnParametricChange \"{force}\", \"True\""
-    res = canvas.write_send(cst_handler, vba_code, None)
+    res = canvas.write_send(csth, vba_code, None)
 
     if res:
         print("[ OK ] Parameters updated successfully")
@@ -143,21 +150,21 @@ def update_params(cst_handler, force=False):
     return res
 
 
-def modify_param(cst_handler, param_name: str, value: int):
+def modify_param(csth, param_name: str, value: int):
     print(f"[INFO] Modifying parameter {param_name} to {value}")
 
     canvas = Canvas()
     vba_code = f"StoreParameter \"{param_name}\", \"{value}\""
-    res = canvas.write_send(cst_handler, vba_code, None)
+    res = canvas.write_send(csth, vba_code, None)
     if res:
         print(f"[ OK ] Parameter {param_name} modified successfully")
     else:
         print(f"[ERRO] Failed to modify parameter {param_name}, please check whether the parameter exists")
         raise RuntimeError(f"Failed to modify parameter {param_name}, please check whether the parameter exists")
-    update_params(cst_handler)
+    update_params(csth)
 
 
-def set_acc_dc(cst_handler, solver="FDSolver"):
+def set_acc_dc(csth, solver="FDSolver"):
     print(f"[INFO] Setting solver to {solver}")
 
     canvas = Canvas()
@@ -167,30 +174,30 @@ def set_acc_dc(cst_handler, solver="FDSolver"):
     canvas.add_code(solver, "NetworkComputingStrategy", "RunRemote")
     canvas.add_code(solver, "NetworkComputingJobCount", "99")
     canvas.add_code(solver, "UseParallelization", "True")
-    canvas.add_code(solver, "MaxCPUs", cst_handler._ACC_DC.max_threads)
-    canvas.add_code(solver, "MaximumNumberOfCPUDevices", cst_handler._ACC_DC.max_num_of_cpu_devs)
+    canvas.add_code(solver, "MaxCPUs", csth._ACC_DC.max_threads)
+    canvas.add_code(solver, "MaximumNumberOfCPUDevices", csth._ACC_DC.max_num_of_cpu_devs)
 
     canvas.add_code("MeshSettings", "SetMeshType", "Unstr")
-    canvas.add_code("MeshSettings", "Set", "UseDC", cst_handler._ACC_DC.remote_mesh)
+    canvas.add_code("MeshSettings", "Set", "UseDC", csth._ACC_DC.remote_mesh)
 
-    if cst_handler._ACC_DC.max_params_parallel <= 0:
+    if csth._ACC_DC.max_params_parallel <= 0:
         canvas.write("UseDistributedComputingForParameters \"False\"")
         canvas.write("MaxNumberOfDistributedComputingParameters \"1\"")
         canvas.write("ParameterSweep.UseDistributedComputing \"False\"")
     else:
         canvas.write("UseDistributedComputingForParameters \"True\"")
-        canvas.write(f"MaxNumberOfDistributedComputingParameters \"{cst_handler._ACC_DC.max_params_parallel}\"")
+        canvas.write(f"MaxNumberOfDistributedComputingParameters \"{csth._ACC_DC.max_params_parallel}\"")
         canvas.write("ParameterSweep.UseDistributedComputing \"True\"")
-    canvas.write(f"UseDistributedComputingMemorySetting \"{cst_handler._ACC_DC.use_dc_mem_setting}\"")
-    canvas.write(f"MinDistributedComputingMemoryLimit \"{cst_handler._ACC_DC.min_dc_mem_limit}\"")
-    canvas.write(f"UseDistributedComputingSharedDirectory \"{cst_handler._ACC_DC.use_shared_dir}\"")
-    canvas.write(f"OnlyConsider0D1DResultsForDC \"{cst_handler._ACC_DC.only_0D1D}\"")
+    canvas.write(f"UseDistributedComputingMemorySetting \"{csth._ACC_DC.use_dc_mem_setting}\"")
+    canvas.write(f"MinDistributedComputingMemoryLimit \"{csth._ACC_DC.min_dc_mem_limit}\"")
+    canvas.write(f"UseDistributedComputingSharedDirectory \"{csth._ACC_DC.use_shared_dir}\"")
+    canvas.write(f"OnlyConsider0D1DResultsForDC \"{csth._ACC_DC.only_0D1D}\"")
 
     canvas.preview()
-    canvas.send(cst_handler, "Set accerlation and distributed computing")
+    canvas.send(csth, "Set accerlation and distributed computing")
 
 
-def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
+def set_FDSolver_source(csth, source_port="Zmin", mode="TM(0,0)"):
     print("[INFO] Setting up FDSolver ...")
     canvas = Canvas()
 
@@ -200,7 +207,7 @@ def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
     canvas.write(f"FDSolver.Stimulation \"{source_port}\", \"{mode}\"")
 
     canvas.preview()
-    res = canvas.send(cst_handler, "Set FDSolver")
+    res = canvas.send(csth, "Set FDSolver")
     if res:
         print("[ OK ] FDSolver set successfully")
     else:
@@ -208,20 +215,138 @@ def set_FDSolver_source(cst_handler, source_port="Zmin", mode="TM(0,0)"):
         raise RuntimeError("Failed to set FDSolver, please check whether the mode/port exists")
 
 
-def cpu_monitor(interval:   int = 1,    # additonal check interval
-                threshold:  int = 6,    # threshold for the CPU occupancy rate
-                confidence: int = 10    # confidence level
-                ):
+def beep_alert():
+    """ make a beep sound """
+    if platform.system() == "Windows":
+        import winsound
+        winsound.Beep(1000, 500)  # 1000Hz, 0.5s
+    else:
+        os.system('echo -e "\\a"')  # TTYS BELL (macOS/Linux)
 
 
-def exec_paramSweep(cst_handler):
+def sweep_monitor(crr_pid:        int = None, # current PID
+                  crr_prj_path:   str = None, # current project path
+                  interval:       int = 0.9,  # additonal check interval
+                  threshold:      int = 6,    # threshold for the CPU occupancy rate
+                  monitor_secs:   int = 60,   # monitor time
+                  confidence:     int = 20    # confidence level
+                  ):
+    '''
+    Monitor the CPU occupancy rate and trigger an alarm if the rate is less than the threshold
+    :param interval: additional check interval
+    :param threshold: threshold for the CPU occupancy rate
+    :param monitor_secs: monitor time
+    :param confidence: confidence level
+    '''
+    if not crr_prj_path:
+        print("[ERRO] Project path is not specified")
+        raise RuntimeError("Project path is not specified")
+
+    print("[INFO] Monitoring CPU occupancy rate ...")
+    # seq = 0
+    cnt = 0
+    cpu_usage_list = []
+    cpu_usage_tmp = [0] * 10
+    with contextlib.redirect_stdout(None):
+        csth = cst_handler.CSTHandler(crr_pid)
+    csth.crr_prj = csth.de.get_open_project(crr_prj_path)
+    # sample_size = monitor_secs
+    print(f"[ OK ] Monitor started successfully, connected to PID: {crr_pid}")
+
+    while True:
+        for i in range(10):
+            cpu_usage_tmp[i] = psutil.cpu_percent(interval=0.01)
+        cpu_usage = sum(cpu_usage_tmp) / 10
+        cpu_usage_list.append(cpu_usage)
+
+        # keep the CPU record of the last 60 seconds
+        if len(cpu_usage_list) > monitor_secs:
+            cpu_usage_list.pop(0)
+
+        # calculate the average CPU occupancy rate
+        avg_cpu = sum(cpu_usage_list) / monitor_secs
+        print(f"\r> Currrent CPU occupancy rate: {cpu_usage:.2f}%, \taverage in the past {monitor_secs} seconds: {avg_cpu:.2f}%", end='', flush=True)
+        print("\033[K", end='', flush=True)
+        # seq += 1; print(f"seq: {seq}")
+
+        # trigger alarm
+        if len(cpu_usage_list) == monitor_secs and avg_cpu < threshold:
+            print(f"\n[ALER] CPU occupancy rate is less than {threshold}%, the situation may be abnormal!")
+            beep_alert()
+            cnt += 1
+            if cnt >= confidence:
+                print("[WARN] The solver runs abnormally, aborting ...")
+                csth.crr_prj.modeler.abort_solver()
+                print("[ OK ] Solver aborted successfully")
+                sys.exit(1)
+        else:
+            cnt = 0
+
+        time.sleep(interval)  # additional second interval to prevent frequent CPU monitoring
+
+
+def exec_paramSweep(csth):
     print("[INFO] Executing parameter sweep ...")
     canvas = Canvas()
     canvas.write("ParameterSweep.Start")
     canvas.preview(0)
-    res = canvas.send(cst_handler, add_to_history=False)
+    res = canvas.send(csth, add_to_history=False)
     if res:
         print("[INFO] Parameter sweep finished, please check the results")
     else:
         print("[ERRO] Failed to start parameter sweep")
         raise RuntimeError("Failed to start parameter sweep")
+    
+
+def exec_paramSweep_safe(csth, 
+                         interval:       int = 0.9,  # additonal check interval
+                         threshold:      int = 6,    # threshold for the CPU occupancy rate
+                         monitor_secs:   int = 60,   # monitor time
+                         confidence:     int = 10    # confidence level):
+                         ):
+    print("[INFO] Executing parameter sweep in a safe way ...")
+    canvas = Canvas()
+    canvas.write("ParameterSweep.Start")
+    canvas.preview(0)
+
+    cnt = 0
+    crr_pid = csth.pid
+    crr_prj_path = csth.crr_prj.filename()
+
+    while True:
+        # Create a new monitor thread to monitor the CPU occupancy rate
+        monitor_proc = Process(target=sweep_monitor,
+                            args=(crr_pid,
+                                    crr_prj_path,
+                                    interval,
+                                    threshold,
+                                    monitor_secs,
+                                    confidence),
+                            daemon=True)
+        # time.sleep(10)
+        monitor_proc.start()
+        res = canvas.send(csth, add_to_history=False)
+
+        while True:
+            time.sleep(2)
+            if csth.crr_prj.modeler.is_solver_running():
+                print(".", end="")
+            else:
+                print()
+                print("[INFO] Solver finished")
+                break
+
+        if not res:
+            print("[ERRO] Failed to start parameter sweep")
+            raise RuntimeError("Failed to start parameter sweep")
+
+        if monitor_proc.is_alive():
+            if cnt:
+                print(f"[INFO] The parameter sweep done after {cnt} retries")
+            print("[INFO] Parameter sweep finished, please check the results")
+            break
+        else:
+            monitor_proc.join()
+            if monitor_proc.exitcode == 1:
+                print("[WARN] The solver runs abnormally, retrying ...")
+                cnt += 1
