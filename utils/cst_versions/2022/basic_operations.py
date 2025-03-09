@@ -1,6 +1,8 @@
 from utils.macors_canva import Canvas
 from utils import cst_handler
+from utils import misc
 
+from tabulate import tabulate
 from multiprocessing import Process
 import os
 import sys
@@ -32,6 +34,12 @@ def set_prj_wavelength(csth, wavelength_min, wavelength_max):
 
 
 def define_material(csth, materials_path, material_name):
+    csth.materials[material_name] = {
+        "freq": [],
+        "re": [],
+        "im": []
+    }
+
     print(f"[INFO] Defining material: {material_name}")
     wl_min = csth.crr_prj_properties["wavelegnth_min"]
     wl_max = csth.crr_prj_properties["wavelegnth_max"]
@@ -105,6 +113,9 @@ def define_material(csth, materials_path, material_name):
             if float(freq) < freq_min or float(freq) > freq_max:
                 continue
             canvas.add_code("Material", "AddDispersionFittingValueEps", freq, re, im, "1.0")
+            csth.materials[material_name]["freq"].append(freq)
+            csth.materials[material_name]["re"].append(re)
+            csth.materials[material_name]["im"].append(im)
 
     canvas.add_code("Material", "UseGeneralDispersionEps", "True")
     canvas.add_code("Material", "UseGeneralDispersionMu", "False")
@@ -133,6 +144,10 @@ def define_material(csth, materials_path, material_name):
     else:
         print(f"[ERRO] Failed to define material {material_name}")
         raise RuntimeError(f"Failed to define material {material_name}")
+    
+    print(f"[INFO] A New material {material_name} has been added to the project:")
+    print(tabulate(csth.materials[material_name], headers="keys", tablefmt="pretty"))
+    print("\n")
 
 
 def update_params(csth, force=False):
@@ -140,7 +155,7 @@ def update_params(csth, force=False):
 
     canvas = Canvas()
     vba_code = f"RebuildOnParametricChange \"{force}\", \"True\""
-    res = canvas.write_send(csth, vba_code, None)
+    res = canvas.write_send(csth, vba_code, add_to_history=False)
 
     if res:
         print("[ OK ] Parameters updated successfully")
@@ -155,7 +170,7 @@ def modify_param(csth, param_name: str, value: int):
 
     canvas = Canvas()
     vba_code = f"StoreParameter \"{param_name}\", \"{value}\""
-    res = canvas.write_send(csth, vba_code, None)
+    res = canvas.write_send(csth, vba_code, add_to_history=False)
     if res:
         print(f"[ OK ] Parameter {param_name} modified successfully")
     else:
@@ -224,12 +239,12 @@ def beep_alert():
         os.system('echo -e "\\a"')  # TTYS BELL (macOS/Linux)
 
 
-def sweep_monitor(crr_pid:        int = None, # current PID
-                  crr_prj_path:   str = None, # current project path
-                  interval:       int = 0.9,  # additonal check interval
-                  threshold:      int = 6,    # threshold for the CPU occupancy rate
-                  monitor_secs:   int = 60,   # monitor time
-                  confidence:     int = 20    # confidence level
+def sweep_monitor(crr_pid:        int   = None, # current PID
+                  crr_prj_path:   str   = None, # current project path
+                  interval:       float = 0.9,  # additonal check interval
+                  threshold:      int   = 6,    # threshold for the CPU occupancy rate
+                  monitor_secs:   int   = 60,   # monitor time
+                  confidence:     int   = 20    # confidence level
                   ):
     '''
     Monitor the CPU occupancy rate and trigger an alarm if the rate is less than the threshold
@@ -285,7 +300,10 @@ def sweep_monitor(crr_pid:        int = None, # current PID
         time.sleep(interval)  # additional second interval to prevent frequent CPU monitoring
 
 
-def exec_paramSweep(csth):
+def exec_paramSweep(csth, project=None):
+    if project:
+        csth.crr_prj = project
+        csth.crr_prj.activate()
     print("[INFO] Executing parameter sweep ...")
     canvas = Canvas()
     canvas.write("ParameterSweep.Start")
@@ -296,10 +314,19 @@ def exec_paramSweep(csth):
     else:
         print("[ERRO] Failed to start parameter sweep")
         raise RuntimeError("Failed to start parameter sweep")
-    
+
+
+def exec_parallel_sweep(crr_pid, crr_prj_path):
+    print("[INFO] Executing parallel parameter sweep in background ...")
+    with contextlib.redirect_stdout(None):
+        csth = cst_handler.CSTHandler(crr_pid)
+    csth.crr_prj = csth.de.get_open_project(crr_prj_path)
+    exec_paramSweep(csth)
+    return
+
 
 def exec_paramSweep_safe(csth, 
-                         interval:       int = 0.9,  # additonal check interval
+                         interval:       float = 0.9,  # additonal check interval
                          threshold:      int = 6,    # threshold for the CPU occupancy rate
                          monitor_secs:   int = 60,   # monitor time
                          confidence:     int = 10    # confidence level):
@@ -350,3 +377,93 @@ def exec_paramSweep_safe(csth,
             if monitor_proc.exitcode == 1:
                 print("[WARN] The solver runs abnormally, retrying ...")
                 cnt += 1
+
+
+def set_basic_params(csth,
+                     p:       int = 0,
+                     theta:   int = 0,
+                     phi:     int = 0,
+                     ):
+    
+    # get the maximum frequency and search the closest frequency in the substrate material
+    wavelength_min = csth.crr_prj_properties["wavelength_min"]
+    freq_max = 300 / wavelength_min
+
+    try:
+        substrate_material = csth.crr_prj_properties["substrate_material"]
+    except KeyError:
+        print("[ERRO] Please specify the substrate material first")
+        raise RuntimeError("Please specify the substrate material first")
+    freq_list = csth.materials[substrate_material]["freq"]
+
+    idx = misc.find_closest_idx(freq_list, freq_max)
+    re = csth.materials[substrate_material]["re"][idx]
+    im = csth.materials[substrate_material]["im"][idx]
+
+    if not (p or csth.crr_prj_properties["period"]):
+        print("[ERRO] Please specify the period p first")
+        raise RuntimeError("Please specify the period p first")
+
+    if not (p or csth.crr_prj_properties["farfield"]):
+        print("[ERRO] Please specify the farfield distance first")
+        raise RuntimeError("Please specify the farfield distance first")
+
+    print("[INFO] Setting basic parameters ...")
+    if p:
+        modify_param(csth, "p", p)
+        csth.crr_prj_properties["period"] = p
+        print("[ OK ] p is updated to ", p)
+
+        csth.crr_prj_properties["farfield"] = wavelength_min / 10 # reduce calculate amount
+        # csth.crr_prj_properties["farfield"] = misc.farfield_evaluator(wavelength_min, "standard", p, 1)
+        farfield = csth.crr_prj_properties["farfield"]
+        print("[INFO] farfield will be set to ", p / 10)
+
+        # update crr_prj_properties to prjs list (csth.prjs = pd.DataFrame(columns=["project_instance", "project_properties"]))
+        csth.prjs.loc[csth.prjs["project_instance"] == csth.crr_prj, "project_properties"] = csth.crr_prj_properties
+    else:
+        p = csth.crr_prj_properties["period"]
+        print("[INFO] Current period is ", p)
+
+        farfield = csth.crr_prj_properties["farfield"]
+        print("[INFO] Current farfield distance is ", farfield)
+
+        # update crr_prj_properties to prjs list (csth.prjs = pd.DataFrame(columns=["project_instance", "project_properties"]))
+        csth.prjs.loc[csth.prjs["project_instance"] == csth.crr_prj, "project_properties"] = csth.crr_prj_properties
+
+    if theta:
+        modify_param(csth, "theta", theta)
+        print("[ OK ] theta is updated to ", theta)
+
+    if phi:
+        modify_param(csth, "phi", phi)
+        print("[ OK ] phi is updated to ", phi)
+
+    # calculate refractive index
+    n_re, _, _, _ = misc.dielectric2refractive(float(re), float(im))
+
+    # calculate floquet boundaries and enable modes
+    _, enable_modes = misc.floquet_evaluator(n_re, freq_max, p, theta, phi)
+
+    # update background and its material
+    canvas = Canvas()
+    vbas = Canvas.vba_template.set_background(farfield_distance=farfield)
+    canvas.write(vbas)
+    vbas = Canvas.vba_template.set_background_normal_material()
+    canvas.write(vbas)
+    # canvas.preview()
+    canvas.send(csth, "Set background")
+
+    # update the number of modes
+    vbas = Canvas.vba_template.set_floquet_port_boundaries(enable_modes, farfield_distance=farfield)
+    canvas.write(vbas)
+    canvas.preview(0)
+    canvas.send(csth, "Set Floquet port boundaries")
+
+    # update boundaries
+    vbas = Canvas.vba_template.set_boundaries()
+    canvas.write(vbas)
+    # canvas.preview()
+    canvas.send(csth, "Set boundaries")
+
+    print("[ OK ] Basic parameters set successfully")
