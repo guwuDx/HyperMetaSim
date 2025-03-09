@@ -40,10 +40,15 @@ class CSTHandler:
         self._template_path = None
         self._instance_path = None
         self.crr_prj = None
+        self.materials = {}
         self.crr_prj_properties = {
             "type": None, 
-            "wavelegnth_min": None,
-            "wavelegnth_max": None,
+            "period": None,
+            "wavelength_min": None,
+            "wavelength_max": None,
+            "substrate_material": "",
+            "pillar_material": "",
+            "farfield": None
         }
         self.prjs = pd.DataFrame(columns=["project_instance", "project_properties"])
         self._get_cnf()
@@ -120,11 +125,18 @@ class CSTHandler:
 
         basic_operations.set_prj_wavelength(self, wavelength_min, wavelength_max)
         self.crr_prj_properties["type"] = crr_prj_type
+        self.crr_prj_properties["wavelength_min"] = wavelength_min
+        self.crr_prj_properties["wavelength_max"] = wavelength_max
+
+        self.crr_prj_properties["farfield"] = wavelength_min / 10
+        # self.crr_prj_properties["farfield"] = misc.farfield_evaluator(wavelength_min)
+
         prj_dict = [{
             "project_instance": self.crr_prj, 
             "project_properties": self.crr_prj_properties
         }]
         self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+
         # crr_proj = de.get_open_projects()
         # print(crr_proj[0], '\n---')
 
@@ -222,6 +234,51 @@ class CSTHandler:
         print("[INFO] Saving current project ...")
         self.crr_prj.save()
         print("[ OK ] Project saved successfully")
+
+
+    def duplicate_prj(self, new_prj_name):
+        print("[INFO] Duplicating project ...")
+        self.save_crr_prj()
+
+        # get the current project name and path
+        filename = self.crr_prj.filename()
+        prj_path = os.path.dirname(filename)
+
+        # duplicate the project and its properties
+        # ppts = self.crr_prj_properties
+        index_to_drop = self.prjs[self.prjs["project_instance"] == self.crr_prj].index
+        self.prjs = self.prjs.drop(index_to_drop).reset_index(drop=True)
+        self.crr_prj.save(path=f"{prj_path}/{new_prj_name}.cst", include_results=False)
+
+        # restore the new project and its properties
+        prj_dict = [{
+            "project_instance": self.crr_prj, 
+            "project_properties": self.crr_prj_properties
+        }]
+        self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+        new_prj = self.crr_prj
+
+        # recover the duplicated project
+        self.crr_prj = self.de.open_project(filename)
+        prj_dict = [{
+            "project_instance": self.crr_prj, 
+            "project_properties": self.crr_prj_properties
+        }]
+        self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+        self.crr_prj.activate()
+        print("[ OK ] Project duplicated successfully")
+
+        return new_prj
+    
+
+    def close_prj(self, prj=None):
+        if not prj:
+            prj = self.crr_prj
+        print("[INFO] Closing project and removing its properties from the list ...")
+        index_to_drop = self.prjs[self.prjs["project_instance"] == prj].index
+        self.prjs = self.prjs.drop(index_to_drop).reset_index(drop=True)
+        prj.close()
+        print("[ OK ] Project closed successfully")
 
 
     def close(self, force=False):

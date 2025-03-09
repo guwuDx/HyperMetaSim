@@ -1,23 +1,31 @@
 import numpy as np
-import os
 from math import ceil, floor
 from tqdm import tqdm
 
 from utils.macors_canva import Canvas
+from utils.misc import ranges
 
 # from utils import basic_operations
 
 
 
 class SquarePillar:
-    def __init__(self, cst_handler):
-        self.cst_handler = cst_handler
-        self.padding = cst_handler._DRC.padding
-        self.h_l_ratio_upper_bound = cst_handler._DRC.h_l_ratio_upper_bound
-        self.wavelength_min = cst_handler.crr_prj_properties["wavelegnth_min"]
-        self.wavelength_max = cst_handler.crr_prj_properties["wavelegnth_max"]
+
+    def __init__(self, csth):
+        self.csth = csth
+        self.padding = csth._DRC.padding
+        self.h_l_ratio_upper_bound = csth._DRC.h_l_ratio_upper_bound
+        self.wavelength_min = csth.crr_prj_properties["wavelegnth_min"]
+        self.wavelength_max = csth.crr_prj_properties["wavelegnth_max"]
         self.canvas = Canvas()
         self.sweep_list = None
+        # self.sweep_element = {
+        #     "theta_start": 0, "theta_end": 0, "theta_step": 0,
+        #     "phi_start": 0,   "phi_end": 0,   "phi_step": 0,
+        #     "p_start": 0,     "p_end": 0,     "p_step": 0,
+        #     "h_start": 0,     "h_end": 0,     "h_step": 0,
+        #     "l_start": 0,     "l_end": 0,     "l_step": 0,
+        # }
 
 
     def generate_sweep_squence(self, p_step, h_step, l_step, output_file_path=None):
@@ -84,11 +92,11 @@ class SquarePillar:
         self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
 
         if start_now:
-            self.cst_handler.save_crr_prj()
+            self.csth.save_crr_prj()
             print("[INFO] Setting completed, starting simulation ...")
             self.canvas.add_code(obj, "Start", adapt=False)
             # self.canvas.preview(0)
-            res = self.canvas.send(self.cst_handler, add_to_history=False)
+            res = self.canvas.send(self.csth, add_to_history=False)
             if res:
                 print("[INFO] Parameter sweep finished, please check the results.")
             else:
@@ -97,30 +105,37 @@ class SquarePillar:
         else:
             print("[INFO] Setting completed, please start the simulation manually.")
             # self.canvas.preview(0)
-            res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=False)
+            res = self.canvas.send(self.csth, cmt="Set up paramSweep", add_to_history=False)
             if res:
                 print("[INFO] Parameter sweep set successfully")
             else:
                 print("[ERRO] Failed to set up the parameter sweep, please check the parameters.")
                 raise RuntimeError("Failed to set up the parameter sweep, please check the parameters.")
-            self.cst_handler.save_crr_prj()
+            self.csth.save_crr_prj()
 
         # print("[INFO] vba code to be executed:\n")
         # self.canvas.preview()
         return res
 
 
-    def set_sweep_from_range(self,
-                             p_start:   int  = None,
-                             p_end:     int  = None,
-                             p_step:    int  = None,
-                             h_step:    int  = None,
-                             l_step:    int  = None,
-                             start_now: bool = True):
+    def set_sweep_from_period(self,
+                             h_step:    float  = None,
+                             l_step:    float  = None,
+                             h_start:   float  = None,
+                             h_end:     float  = None,
+                             l_start:   float  = None,
+                             l_end:     float  = None,
+                             start_now: bool = False):
 
-        if not p_step or not h_step or not l_step:
+        if not h_step or not l_step:
             print("[ERRO] Step size of the parameters is not specified.")
             raise ValueError("Step size of the parameters is not specified.")
+
+        try:
+            p = self.csth.crr_prj_properties["period"]
+        except KeyError:
+            print("[ERRO] Period is not specified.")
+            raise KeyError("Period is not specified.")
 
         padding = self.padding
         h_l_ratio_upper_bound = self.h_l_ratio_upper_bound
@@ -128,38 +143,66 @@ class SquarePillar:
         obj = "ParameterSweep"
         self.canvas.add_code(obj, "DeleteAllSequences", adapt=False)
 
-        if p_start is None or p_end is None:
-            print("[WARN] Arrangement period range is not specified, all periods will be considered.")
-            print("[WARN] This method is not recommended for large/long wavelength range.")
-
-            wavelength_min = self.wavelength_min
-            wavelength_max = self.wavelength_max
-            p_start = floor((wavelength_min / 4) / p_step) * p_step
-            p_end = ceil((wavelength_max / 2) / p_step) * p_step
+        h_start_drc = False
+        h_end_drc = False
+        l_start_drc = False
+        l_end_drc = False
+        if not h_start:
+            print("[INFO] Minimum height is not specified, using default DRC configuration.")
+            h_start_drc = True
+        if not h_end:
+            print("[INFO] Maximum height is not specified, using default DRC configuration.")
+            h_end_drc = True
+        if not l_start:
+            print("[INFO] Minimum length is not specified, using default DRC configuration.")
+            l_start = l_step
+            l_start_drc = True
+        if not l_end:
+            print("[INFO] Maximum length is not specified, using default DRC configuration.")
+            l_end = p - 2 * padding
+            l_end_drc = True
 
         i = 0
-        for p in np.arange(p_start, p_end, p_step):
-            for l in np.arange(l_step, p - 2 * padding, l_step):
-                p_around = np.around(p, decimals=3)
-                l_around = np.around(l, decimals=3)
-                h_start = max(h_step, padding)
-                h_end = np.around((min(l_around * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+        cnt = 0
+        lenghts = ranges(l_start, l_end, l_step)
 
-                seq = f"seq_p{p_around}_l{l_around}"
+        if h_start_drc or h_end_drc:
+            for l in lenghts:
+                if h_start_drc:
+                    h_start = max(h_step, padding)
+                if h_end_drc:
+                    h_end = np.around((min(l * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+
+                seq = f"seq{cnt}_l{l}"
                 self.canvas.add_code(obj, "AddSequence", seq                                        , adapt=False)
-                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "p", str(p_around)   , adapt=False)
-                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l_around)   , adapt=False)
-                self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "h", h_start, h_end, h_step, adapt=False)
-                i += ceil((h_end - h_start + 1) / h_step)
+                self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "l", str(l)          , adapt=False)
+                if h_start == h_end:
+                    self.canvas.add_code(obj, "AddParameter_ArbitraryPoints", seq, "h", str(h_start), adapt=False)
+                    i += 1
+                else:
+                    self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "h", h_start, h_end, h_step, adapt=False)
+                    i += ceil((h_end - h_start + 1) / h_step)
+
+                cnt += 1
+        else:
+            if not (l_start_drc or l_end_drc):
+                print("[INFO] ALL parameters are specified.")
+
+            seq = "full_specifed"
+            self.canvas.add_code(obj, "AddSequence", seq,                                           adapt=False)
+            self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "h", h_start, h_end, h_step,   adapt=False)
+            self.canvas.add_code(obj, "AddParameter_Stepwidth", seq, "l", l_start, l_end, l_step,   adapt=False)
+            i += ceil((h_end - h_start + 1) / h_step) * ceil((l_end - l_start + 1) / l_step)
+
         print(f"[INFO] {i} parameters combinations were generated.")
         self.canvas.add_code(obj, "SetSimulationType", "Frequency", adapt=False)
 
         if start_now:
-            self.cst_handler.save_crr_prj()
+            self.csth.save_crr_prj()
             print("[INFO] Setting completed, starting simulation ...")
             self.canvas.add_code(obj, "Start", adapt=False)
             # self.canvas.preview(0)
-            res = self.canvas.send(self.cst_handler, add_to_history=False)
+            res = self.canvas.send(self.csth, add_to_history=False)
             if res:
                 print("[INFO] Parameter sweep finished, please check the results.")
             else:
@@ -168,64 +211,67 @@ class SquarePillar:
         else:
             print("[INFO] Setting completed, please start the simulation manually.")
             # self.canvas.preview(0)
-            res = self.canvas.send(self.cst_handler, cmt="Set up paramSweep", add_to_history=False)
+            res = self.canvas.send(self.csth, cmt="Set up paramSweep", add_to_history=False)
             if res:
                 print("[INFO] Parameter sweep set successfully")
             else:
                 print("[ERRO] Failed to set up the parameter sweep, please check the parameters.")
                 raise RuntimeError("Failed to set up the parameter sweep, please check the parameters.")
-            self.cst_handler.save_crr_prj()
+            self.csth.save_crr_prj()
 
 
     def set_params(self, 
-                   p:       int = None, # the Arrangement period of the metastructure
-                   h:       int = None, # the height of the pillar
-                   l:       int = None, # the length of the pillar
-                   phi:     int = None, # the azimuthal angle of the EM wave
-                   theta:   int = None  # the incident angle of the EM wave
+                   p:       float = None, # the Arrangement period of the metastructure
+                   h:       float = None, # the height of the pillar
+                   l:       float = None, # the length of the pillar
+                   phi:     float = None, # the azimuthal angle of the EM wave
+                   theta:   float = None  # the incident angle of the EM wave
                    ):
+        import basic_operations
         print("[INFO] Setting parameters ...")
         obj = "StoreParameter"
 
-        if p:
-            self.canvas.write(f"{obj} \"p\", \"{p}\"")
         if h:
-            self.canvas.write(f"{obj} \"h\", \"{h}\"")
+            self.canvas.write(f"{obj} \"h\", \"{h}\"", adapt=False)
         if l:
-            self.canvas.write(f"{obj} \"l\", \"{l}\"")
-        if phi:
-            self.canvas.write(f"{obj} \"phi\", \"{phi}\"")
-        if theta:
-            self.canvas.write(f"{obj} \"theta\", \"{theta}\"")
-        res = self.canvas.send(self.cst_handler, cmt="Set parameters")
+            self.canvas.write(f"{obj} \"l\", \"{l}\"", adapt=False)
+        res = self.canvas.send(self.csth, cmt="Set parameters")
+        
         if res:
             print("[ OK ] Parameters set successfully")
-            # basic_operations.update_params(self.cst_handler)
+            # basic_operations.update_params(self.csth)
         else:
             print("[ERRO] Failed to set parameters, please check whether the parameters exist")
             raise RuntimeError("Failed to set parameters, please check whether the parameters exist")
 
+        if p or theta or phi:
+            basic_operations.set_basic_params(self.csth, p, theta, phi)
+
 
     def simulate_param_combination(self, 
-                   p:       int  = None,    # the Arrangement period of the metastructure
-                   h:       int  = None,    # the height of the pillar
-                   l:       int  = None,    # the length of the pillar
-                   phi:     int  = None,    # the azimuthal angle of the EM wave
-                   theta:   int  = None,    # the incident angle of the EM wave
-                   blocked: bool = True,    # whether to block the simulation
-                   timeout: int  = None     # the timeout of the simulation
+                   p:       float  = None,    # the Arrangement period of the metastructure
+                   h:       float  = None,    # the height of the pillar
+                   l:       float  = None,    # the length of the pillar
+                   phi:     float  = None,    # the azimuthal angle of the EM wave
+                   theta:   float  = None,    # the incident angle of the EM wave
+                   blocked: bool   = True,    # whether to block the simulation
+                   timeout: int    = None     # the timeout of the simulation
                    ):
         print("[INFO] Simulating parameters ...")
         self.set_params(p, h, l, phi, theta)
-        self.cst_handler.run_solver(blocked=blocked, timeout=timeout)
+        self.csth.run_solver(blocked=blocked, timeout=timeout)
 
 
     def calculate_combination_num(self,
-                                  p_start: int = None,
-                                  p_end:   int = None,
-                                  p_step:  int = None,
-                                  h_step:  int = None,
-                                  l_step:  int = None):
+                                  p_start: float = None,
+                                  p_end:   float = None,
+                                  p_step:  float = None,
+                                  h_start: float = None,
+                                  h_end:   float = None,
+                                  h_step:  float = None,
+                                  l_start: float = None,
+                                  l_end:   float = None,
+                                  l_step:  float = None):
         
         if not p_step or not h_step or not l_step:
             print("[WARN] Step size of the parameters is not specified.")
@@ -244,12 +290,19 @@ class SquarePillar:
             p_end = ceil((wavelength_max / 2) / p_step) * p_step
 
         i = 0
-        for p in np.arange(p_start, p_end + p_step, p_step):
-            p_around = np.around(p, decimals=3)
-            for l in np.arange(l_step, (p_around - 2 * padding) + l_step, l_step):
-                l_around = np.around(l, decimals=3)
-                h_start = max(h_step, padding)
-                h_end = np.around((min(l_around * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+        periods = ranges(p_start, p_end, p_step)
+        for p in periods:
+            if not l_start:
+                l_start = l_step
+            if not l_end:
+                l_end = p - 2 * padding
+            lenghts = ranges(l_start, l_end, l_step)
+
+            for l in lenghts:
+                if not h_start:
+                    h_start = max(h_step, padding)
+                if not h_end:
+                    h_end = np.around((min(l * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
 
                 i += ceil((h_end - h_start + 1) / h_step)
 
@@ -257,55 +310,87 @@ class SquarePillar:
         return i
 
 
-    def py_sweep_from_range(self,
-                             p_start:       int  = None,
-                             p_end:         int  = None,
-                             p_step:        int  = None,
-                             h_step:        int  = None,
-                             l_step:        int  = None,
-                             timeout_once:  int  = None):
-
-        if not p_step or not h_step or not l_step:
-            print("[ERRO] Step size of the parameters is not specified.")
-            raise ValueError("Step size of the parameters is not specified.")
+    def py_sweep_from_period(self,
+                            p:       float = None,
+                            h_start: float = None,
+                            h_end:   float = None,
+                            h_step:  float = None,
+                            l_start: float = None,
+                            l_end:   float = None,
+                            l_step:  float = None,
+                            timeout_once: int = None):
+        if not p or not h_step or not l_step:
+            print("[WARN] Step size of the parameters is not specified.")
+            return
         
         padding = self.padding
         h_l_ratio_upper_bound = self.h_l_ratio_upper_bound
-        print(f"[INFO] Preparing to sweep parameters ...")
-        
-        if p_start is None or p_end is None:
-            print("[WARN] Arrangement period range is not specified, all periods will be considered.")
-            print("[WARN] This method is not recommended for large/long wavelength range.")
-            
-            wavelength_min = self.wavelength_min
-            wavelength_max = self.wavelength_max
-            p_start = floor((wavelength_min / 4) / p_step) * p_step
-            p_end = ceil((wavelength_max / 2) / p_step) * p_step
+        print(f"[INFO] Generating Parameter Sweep List ...")
+        total = self.calculate_combination_num(p, h_start, h_end, h_step, l_start, l_end, l_step)
 
-        # get the terminal width
-        term_width = os.get_terminal_size().columns
-        tqdm_ncols = max(40, term_width - 20)
+        if not l_start:
+            l_start = l_step
+        if not l_end:
+            l_end = p - 2 * padding
+        lenghts = ranges(l_start, l_end, l_step)
 
-        total = self.calculate_combination_num(p_start, p_end, p_step, h_step, l_step)
-        with tqdm(total=total, desc="Sweeping Parameters", ncols=tqdm_ncols) as pbar:
-            for p in np.arange(p_start, p_end + p_step, p_step):
-                for l in np.arange(l_step, (p - 2 * padding) + l_step, l_step):
-                    p_around = np.around(p, decimals=3)
-                    l_around = np.around(l, decimals=3)
-                    h_start = max(h_step, padding)
-                    h_end = np.around((min(l_around * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
+        for l in lenghts:
+            if not h_start:
+                h_start = max(h_step, padding)
+            if not h_end:
+                h_end = np.around((min(l * h_l_ratio_upper_bound, (p-l) * h_l_ratio_upper_bound)), decimals=3)
 
-                    for h in np.arange(h_start, h_end + h_step, h_step):
-                        h_around = np.around(h, decimals=3)
-                        print(f"[INFO] Simulating parameters combination:\n p = {p_around}, h = {h_around}, l = {l_around}")
-
-                        self.simulate_param_combination(p = p_around,
-                                                        h = h_around,
-                                                        l = l_around,
-                                                        phi = 0,
-                                                        theta = 0,
-                                                        blocked = True,
-                                                        timeout = timeout_once)
-            pbar.update(1)
+            h_range = ranges(h_start, h_end, h_step)
+            for h in h_range:
+                self.simulate_param_combination(p, h, l, 0, 0, True, timeout_once)
 
         print(f"[INFO] All {total} parameters combinations have been simulated.")
+
+
+    def set_period_parallel_sweep(self, 
+                                p_start=0.0, p_end=0.0, p_step=0.0,
+                                h_start=0.0, h_end=0.0, h_step=0.0,
+                                l_start=0.0, l_end=0.0, l_step=0.0, 
+                                start_now=False):
+        from . import basic_operations
+
+        csth = self.csth
+        # original_prj = copy.copy(csth.crr_prj)
+        p_list = ranges(p_start, p_end, p_step)
+        sweep_prjs_list = []
+
+        for p in p_list:
+            # duplicate project
+            print(f"[INFO] Duplicating project for period {p}")
+            new_prj = csth.duplicate_prj(f"SquarePillar__surface_inst_period{p}")
+
+            # set basic sweep
+            original_prj = csth.crr_prj
+            csth.crr_prj = new_prj
+            csth.crr_prj.activate()
+            print(f"[INFO] Setting primary sweep for period {p}")
+            basic_operations.set_basic_params(csth, p=p)
+            self.set_sweep_from_period(h_start=h_start,  l_start=l_start,
+                                       h_step=h_step,    l_step=l_step,
+                                       h_end=h_end,      l_end=l_end)
+            sweep_prjs_list.append(csth.crr_prj)
+
+            # start simulation
+            if start_now:
+                print(f"[INFO] Starting simulation for period {p}")
+                csth.save_crr_prj()
+                self.canvas.add_code("ParameterSweep", "Start", adapt=False)
+                res = self.canvas.send(csth, add_to_history=False)
+                if res:
+                    print(f"[ OK ] Simulation started for period {p}")
+                    csth.save_crr_prj()
+                    csth.close_prj()
+                else:
+                    print(f"[ERRO] Failed to start simulation for period {p}")
+                    raise RuntimeError(f"Failed to start simulation for period {p}")
+
+            print(f"[ OK ] Done for period {p}")
+            csth.crr_prj = original_prj
+            csth.crr_prj.activate()
+
+        return sweep_prjs_list
