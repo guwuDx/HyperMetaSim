@@ -106,7 +106,7 @@ class Canvas:
 
 
     def write_send(self, cst_app, code, cmt=None, add_to_history=True, timeout=None):
-        self.write(code)
+        self.write(code, adapt=add_to_history)
         return self.send(cst_app, cmt, add_to_history, timeout, clear=True)
 
 
@@ -162,6 +162,146 @@ End If
 Sub Main()
 AddToHistory \"{cmt}\", \"{vba_code}\"
 End Sub
+"""
+
+
+        @staticmethod
+        def set_background(farfield_distance):
+            return f"""
+With Background 
+     .ResetBackground 
+     .XminSpace "0.0" 
+     .XmaxSpace "0.0" 
+     .YminSpace "0.0" 
+     .YmaxSpace "0.0" 
+     .ZminSpace "0.0" 
+     .ZmaxSpace "{farfield_distance}" 
+     .ApplyInAllDirections "False" 
+End With 
+"""
+
+
+        @staticmethod
+        def set_background_normal_material():
+            return """
+With Material 
+     .Reset 
+     .Rho "1.204"
+     .ThermalType "Normal"
+     .ThermalConductivity "0.026"
+     .SpecificHeat "1005", "J/K/kg"
+     .DynamicViscosity "0"
+     .Emissivity "0"
+     .MetabolicRate "0.0"
+     .VoxelConvection "0.0"
+     .BloodFlow "0"
+     .MechanicsType "Unused"
+     .IntrinsicCarrierDensity "0"
+     .FrqType "all"
+     .Type "Normal"
+     .MaterialUnit "Frequency", "Hz"
+     .MaterialUnit "Geometry", "m"
+     .MaterialUnit "Time", "s"
+     .MaterialUnit "Temperature", "Kelvin"
+     .Epsilon "1.0"
+     .Mu "1.0"
+     .Sigma "0"
+     .TanD "0.0"
+     .TanDFreq "0.0"
+     .TanDGiven "False"
+     .TanDModel "ConstSigma"
+     .SetConstTanDStrategyEps "AutomaticOrder"
+     .ConstTanDModelOrderEps "3"
+     .DjordjevicSarkarUpperFreqEps "0"
+     .SetElParametricConductivity "False"
+     .ReferenceCoordSystem "Global"
+     .CoordSystemType "Cartesian"
+     .SigmaM "0"
+     .TanDM "0.0"
+     .TanDMFreq "0.0"
+     .TanDMGiven "False"
+     .TanDMModel "ConstSigma"
+     .SetConstTanDStrategyMu "AutomaticOrder"
+     .ConstTanDModelOrderMu "3"
+     .DjordjevicSarkarUpperFreqMu "0"
+     .SetMagParametricConductivity "False"
+     .DispModelEps  "None"
+     .DispModelMu "None"
+     .DispersiveFittingSchemeEps "Nth Order"
+     .MaximalOrderNthModelFitEps "10"
+     .ErrorLimitNthModelFitEps "0.1"
+     .UseOnlyDataInSimFreqRangeNthModelEps "False"
+     .DispersiveFittingSchemeMu "Nth Order"
+     .MaximalOrderNthModelFitMu "10"
+     .ErrorLimitNthModelFitMu "0.1"
+     .UseOnlyDataInSimFreqRangeNthModelMu "False"
+     .UseGeneralDispersionEps "False"
+     .UseGeneralDispersionMu "False"
+     .NLAnisotropy "False"
+     .NLAStackingFactor "1"
+     .NLADirectionX "1"
+     .NLADirectionY "0"
+     .NLADirectionZ "0"
+     .Colour "0.6", "0.6", "0.6" 
+     .Wireframe "False" 
+     .Reflection "False" 
+     .Allowoutline "True" 
+     .Transparentoutline "False" 
+     .Transparency "0" 
+     .ChangeBackgroundMaterial
+End With
+"""
+
+
+        @staticmethod
+        def set_floquet_port_boundaries(enable_modes, farfield_distance):
+            return f"""
+With FloquetPort
+     .Reset
+     .SetDialogFrequency "1" 
+     .SetDialogMediaFactor "1" 
+     .SetDialogTheta "theta" 
+     .SetDialogPhi "phi" 
+     .SetPolarizationIndependentOfScanAnglePhi "0.0", "False"  
+     .SetSortCode "+beta/pw" 
+     .SetCustomizedListFlag "False" 
+     .Port "Zmin" 
+     .SetNumberOfModesConsidered "{enable_modes}" 
+     .SetDistanceToReferencePlane "0.0" 
+     .SetUseCircularPolarization "False" 
+     .Port "Zmax" 
+     .SetNumberOfModesConsidered "{enable_modes}" 
+     .SetDistanceToReferencePlane "-{farfield_distance}" 
+     .SetUseCircularPolarization "False" 
+End With
+"""
+
+
+        @staticmethod
+        def set_boundaries():
+            return """
+With Boundary
+     .Xmin "unit cell"
+     .Xmax "unit cell"
+     .Ymin "unit cell"
+     .Ymax "unit cell"
+     .Zmin "open"
+     .Zmax "open"
+     .Xsymmetry "none"
+     .Ysymmetry "none"
+     .Zsymmetry "none"
+     .ApplyInAllDirections "False"
+     .XPeriodicShift "0.0"
+     .YPeriodicShift "0.0"
+     .ZPeriodicShift "0.0"
+     .PeriodicUseConstantAngles "False"
+     .SetPeriodicBoundaryAngles "theta", "phi"
+     .SetPeriodicBoundaryAnglesDirection "outward"
+     .UnitCellFitToBoundingBox "True"
+     .UnitCellDs1 "0.0"
+     .UnitCellDs2 "0.0"
+     .UnitCellAngle "90.0"
+End With
 """
 
 __all__ = ["Canvas"]
