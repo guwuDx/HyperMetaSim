@@ -5,7 +5,7 @@ import os
 import time
 
 misc.add_cst_lib_path()
-from cst.interface import DesignEnvironment, Project
+from cst.interface import DesignEnvironment
 
 # project_name = "square_pillar"
 _template_path = "/templates/"
@@ -44,6 +44,8 @@ class CSTHandler:
         self.crr_prj_properties = {
             "type": None, 
             "period": None,
+            "theta": 0,
+            "phi": 0,
             "wavelength_min": None,
             "wavelength_max": None,
             "substrate_material": "",

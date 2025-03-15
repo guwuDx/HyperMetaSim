@@ -227,7 +227,7 @@ class SquarePillar:
                    phi:     float = None, # the azimuthal angle of the EM wave
                    theta:   float = None  # the incident angle of the EM wave
                    ):
-        import basic_operations
+        import basic_opts
         print("[INFO] Setting parameters ...")
         obj = "StoreParameter"
 
@@ -245,7 +245,7 @@ class SquarePillar:
             raise RuntimeError("Failed to set parameters, please check whether the parameters exist")
 
         if p or theta or phi:
-            basic_operations.set_basic_params(self.csth, p, theta, phi)
+            basic_opts.set_basic_params(self.csth, p, theta, phi)
 
 
     def simulate_param_combination(self, 
