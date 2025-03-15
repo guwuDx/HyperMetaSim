@@ -387,6 +387,7 @@ def set_basic_params(csth,
     
     # get the maximum frequency and search the closest frequency in the substrate material
     wavelength_min = csth.crr_prj_properties["wavelength_min"]
+    wavelength_max = csth.crr_prj_properties["wavelength_max"]
     freq_max = 300 / wavelength_min
 
     try:
@@ -415,10 +416,10 @@ def set_basic_params(csth,
         csth.crr_prj_properties["period"] = p
         print("[ OK ] p is updated to ", p)
 
-        csth.crr_prj_properties["farfield"] = wavelength_min / 10 # reduce calculate amount
+        csth.crr_prj_properties["farfield"] = wavelength_max # reduce calculate amount
         # csth.crr_prj_properties["farfield"] = misc.farfield_evaluator(wavelength_min, "standard", p, 1)
         farfield = csth.crr_prj_properties["farfield"]
-        print("[INFO] farfield will be set to ", p / 10)
+        print("[INFO] farfield will be set to ", farfield)
 
         # update crr_prj_properties to prjs list (csth.prjs = pd.DataFrame(columns=["project_instance", "project_properties"]))
         csth.prjs.loc[csth.prjs["project_instance"] == csth.crr_prj, "project_properties"] = csth.crr_prj_properties
