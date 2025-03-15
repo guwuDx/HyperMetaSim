@@ -352,7 +352,7 @@ class SquarePillar:
                                 h_start=0.0, h_end=0.0, h_step=0.0,
                                 l_start=0.0, l_end=0.0, l_step=0.0, 
                                 start_now=False):
-        from . import basic_operations
+        from . import basic_opts
 
         csth = self.csth
         # original_prj = copy.copy(csth.crr_prj)
@@ -369,7 +369,7 @@ class SquarePillar:
             csth.crr_prj = new_prj
             csth.crr_prj.activate()
             print(f"[INFO] Setting primary sweep for period {p}")
-            basic_operations.set_basic_params(csth, p=p)
+            basic_opts.set_basic_params(csth, p=p)
             self.set_sweep_from_period(h_start=h_start,  l_start=l_start,
                                        h_step=h_step,    l_step=l_step,
                                        h_end=h_end,      l_end=l_end)

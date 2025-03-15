@@ -3,6 +3,7 @@ from utils import misc
 import pandas as pd
 import os
 import time
+import json
 
 misc.add_cst_lib_path()
 from cst.interface import DesignEnvironment
@@ -115,7 +116,7 @@ class CSTHandler:
                              wavelength_min,
                              wavelength_max
                              ):
-        from utils import basic_operations
+        from utils import basic_opts
 
         crr_prj_type = self.crr_prj_properties["type"]
 
@@ -125,12 +126,12 @@ class CSTHandler:
         print("[ OK ] Project instantiated successfully")
         print("[INFO] current project is: ", self.crr_prj.filename())
 
-        basic_operations.set_prj_wavelength(self, wavelength_min, wavelength_max)
+        basic_opts.set_prj_wavelength(self, wavelength_min, wavelength_max)
         self.crr_prj_properties["type"] = crr_prj_type
         self.crr_prj_properties["wavelength_min"] = wavelength_min
         self.crr_prj_properties["wavelength_max"] = wavelength_max
 
-        self.crr_prj_properties["farfield"] = wavelength_min / 10
+        self.crr_prj_properties["farfield"] = wavelength_max
         # self.crr_prj_properties["farfield"] = misc.farfield_evaluator(wavelength_min)
 
         prj_dict = [{
@@ -200,9 +201,11 @@ class CSTHandler:
         print("[INFO] Reading CST configurations ...")
         cnf = misc.read_toml("./config/service.toml", "cst")
         self._projects_path = cnf["projects_path"]
+        # self._permanent_path = cnf["permanent_path"]
         self._template_path = cnf.get("template_path", _template_path)
         self._instance_path = cnf.get("instance_path", _instance_path)
-        
+        self._permanent_path = cnf.get("permanent_path")
+
         drc = misc.configure_drc()
         self._DRC.h_l_ratio_upper_bound = drc["h_l_ratio_upper_bound"]
         units = drc.get("geometric_units", "um")
@@ -217,15 +220,15 @@ class CSTHandler:
             raise ValueError("Unsupported geometric units, could only be um, mm or nm")
 
         acc_dc = misc.configure_acc_and_dc()
-        self._ACC_DC.max_num_of_cpu_devs = acc_dc.get("max_num_of_cpu_devs", 1)
-        self._ACC_DC.max_threads = acc_dc.get("max_threads", 1024)
+        self._ACC_DC.max_num_of_cpu_devs    = acc_dc.get("max_num_of_cpu_devs", 1)
+        self._ACC_DC.max_threads            = acc_dc.get("max_threads", 1024)
 
-        self._ACC_DC.max_params_parallel = acc_dc.get("max_params_parallel", 99)
-        self._ACC_DC.only_0D1D = acc_dc.get("only_0D1D", True)
-        self._ACC_DC.use_shared_dir = acc_dc.get("use_shared_dir", True)
-        self._ACC_DC.use_dc_mem_setting = acc_dc.get("use_dc_mem_setting", False)
-        self._ACC_DC.min_dc_mem_limit = acc_dc.get("min_dc_mem_limit", 0)
-        self._ACC_DC.remote_mesh = acc_dc.get("remote_mesh", False)
+        self._ACC_DC.max_params_parallel    = acc_dc.get("max_params_parallel", 99)
+        self._ACC_DC.only_0D1D              = acc_dc.get("only_0D1D", True)
+        self._ACC_DC.use_shared_dir         = acc_dc.get("use_shared_dir", True)
+        self._ACC_DC.use_dc_mem_setting     = acc_dc.get("use_dc_mem_setting", False)
+        self._ACC_DC.min_dc_mem_limit       = acc_dc.get("min_dc_mem_limit", 0)
+        self._ACC_DC.remote_mesh            = acc_dc.get("remote_mesh", False)
 
         self._TimeOut.solver = cnf.get("solver_timeout", 300)
 
@@ -235,6 +238,7 @@ class CSTHandler:
     def save_crr_prj(self):
         print("[INFO] Saving current project ...")
         self.crr_prj.save()
+        self.write_properties()
         print("[ OK ] Project saved successfully")
 
 
@@ -271,7 +275,17 @@ class CSTHandler:
         print("[ OK ] Project duplicated successfully")
 
         return new_prj
-    
+
+
+    def settle_prj(self, prj=None):
+        if not prj:
+            prj = self.crr_prj
+        else:
+            prj.activate()
+        print("[INFO] Settling project ...")
+        permant_path = self._permanent_path
+        prj.save(path=permant_path, include_results=False)
+
 
     def close_prj(self, prj=None):
         if not prj:
@@ -292,3 +306,16 @@ class CSTHandler:
             print("[INFO] Closing CST Design Environment ...")
             self.de.close()
             print("[ OK ] CST Design Environment closed successfully")
+
+
+    def write_properties(self):
+        print("[INFO] Writing project properties ...")
+
+        # get the current project directory and the path to the project properties
+        prj_dir = self.crr_prj.filename()[:-4]
+        prj_prop_path = prj_dir + "/project_properties.json"
+
+        # save current project properties as json
+        with open(prj_prop_path, "w") as f:
+            json.dump(self.crr_prj_properties, f, indent=4, ensure_ascii=False)
+        print("[ OK ] Project properties written successfully")

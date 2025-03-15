@@ -5,7 +5,10 @@ from tqdm import tqdm
 from typing import List
 
 
-def fetch_sparams(project_name: str, sparam_names: List[str], plural=True):
+def fetch_sparams(project_name: str, 
+                  sparam_names: List[str], 
+                  project_type: str = None, 
+                  plural=True):
     project = cst.results.ProjectFile(project_name)
     if project:
         print(f"[INFO] Fetching S-parameters from {project.filename}")
@@ -50,5 +53,11 @@ def fetch_sparams(project_name: str, sparam_names: List[str], plural=True):
             # print(f"[INFO] Fetched S-parameters for {sparam_name} with runid {runid}")
 
         print(f"[ OK ] Fetched S-parameters for {sparam_name} successfully")
-    return cells
+
+    res = {
+        "type": project_type,
+        ""
+        "cells": cells
+    }
+    return res
     # sparam = project.get_3d().get_result_item(f"1D Results\\S-Parameters\\{sparam_name}", 2)

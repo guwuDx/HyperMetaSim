@@ -396,6 +396,7 @@ def set_basic_params(csth,
         raise RuntimeError("Please specify the substrate material first")
     freq_list = csth.materials[substrate_material]["freq"]
 
+    # find the closest frequency in the substrate material
     idx = misc.find_closest_idx(freq_list, freq_max)
     re = csth.materials[substrate_material]["re"][idx]
     im = csth.materials[substrate_material]["im"][idx]
@@ -433,10 +434,12 @@ def set_basic_params(csth,
 
     if theta:
         modify_param(csth, "theta", theta)
+        csth.crr_prj_properties["theta"] = theta
         print("[ OK ] theta is updated to ", theta)
 
     if phi:
         modify_param(csth, "phi", phi)
+        csth.crr_prj_properties["phi"] = phi
         print("[ OK ] phi is updated to ", phi)
 
     # calculate refractive index

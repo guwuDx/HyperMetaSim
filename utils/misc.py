@@ -268,8 +268,42 @@ def find_closest_idx(lst, target):
 
 def sparam_id(sparam_name: str, sparam_id: int):
 
-    sparam_list = ["",
-                   ]
+    sparam_list = [
+        "TE(0,0)",  "TM(0,0)",
+        "TE(0,1)",  "TM(0,1)",
+        "TE(0,-1)", "TM(0,-1)",
+        "TE(1,0)",  "TM(1,0)",
+        "TE(-1,0)", "TM(-1,0)",
+        "TE(1,1)",  "TM(1,1)",
+        "TE(1,-1)", "TM(1,-1)",
+        "TE(-1,1)", "TM(-1,1)",
+        "TE(-1,-1)","TM(-1,-1)",
+        "TE(0,2)",  "TM(0,2)",
+        "TE(0,-2)", "TM(0,-2)",
+        "TE(2,0)",  "TM(2,0)",
+        "TE(-2,0)", "TM(-2,0)",
+        "TE(1,2)",  "TM(1,2)",
+        "TE(1,-2)", "TM(1,-2)",
+        "TE(-1,2)", "TM(-1,2)",
+        "TE(-1,-2)","TM(-1,-2)",
+        "TE(2,1)",  "TM(2,1)",
+        "TE(2,-1)", "TM(2,-1)",
+        "TE(-2,1)", "TM(-2,1)",
+        "TE(-2,-1)","TM(-2,-1)",
+        "TE(2,2)",  "TM(2,2)",
+        "TE(2,-2)", "TM(2,-2)",
+        "TE(-2,2)", "TM(-2,2)",
+        "TE(-2,-2)","TM(-2,-2)",
+    ]
+
+    if sparam_name:
+        res = sparam_list.index(sparam_name)
+        return res
+    elif sparam_id:
+        return sparam_list[sparam_id]
+    else:
+        print("[ERROR] sparam_name or sparam_id is required")
+        return None
 
 
 def print_logo():
@@ -281,7 +315,7 @@ def print_logo():
 \ \\ \     / __  // /_/ // /_/ //  __// /              \_\\_\
  \ \\ \   /_/ /_/ \__, // .___/ \___//_/ \   \ BY:      \ \\ \
   \ \\ \         /____//_/    ===========/    \ guwudx   \ \\ \
-   \_\\_\      __  __       _          ___  _  \ GUN 3.0  \ \\ \
+   \_\\_\      __  __       _          ___  _  \ GPL 3.0  \ \\ \
     \_\\_\    |  \/  | ___ | |_  __ _ / __|(_) _ __        \ \\ \
               | |\/| |/ -_)|  _|/ _` |\__ \| || '  \       / // /
               |_|  |_|\___| \__|\__,_||___/|_||_|_|_|     / // /
