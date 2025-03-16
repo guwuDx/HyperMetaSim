@@ -1,0 +1,36 @@
+{
+    "parameters": [
+        {
+            "expr": "0.5",
+            "name": "p",
+            "value": "0.5"
+        },
+        {
+            "expr": "0.3",
+            "name": "h1",
+            "value": "0.3"
+        },
+        {
+            "expr": "0.3",
+            "name": "l",
+            "value": "0.3"
+        },
+        {
+            "expr": "1.5",
+            "name": "h",
+            "value": "1.5"
+        },
+        {
+            "descr": "0",
+            "expr": "0",
+            "name": "theta",
+            "value": "0"
+        },
+        {
+            "expr": "0",
+            "name": "phi",
+            "value": "0"
+        }
+    ],
+    "version": 1
+}

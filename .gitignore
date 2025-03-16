@@ -1,6 +1,7 @@
 config/service.toml
 logs/*
-prjs/*
+prjs/instances/*
+prjs/permanent/*
 
 *.pyc
 *.pyo

@@ -1,3 +1,4 @@
+import utils.misc as misc
 import cst.results
 
 import numpy as np
@@ -61,3 +62,8 @@ def fetch_sparams(project_name: str,
     }
     return res
     # sparam = project.get_3d().get_result_item(f"1D Results\\S-Parameters\\{sparam_name}", 2)
+
+
+def cst2mysql(project_name, force=False):
+    engine = misc.connect_to_mysql()
+    project = cst.results.ProjectFile(project_name)

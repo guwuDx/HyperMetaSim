@@ -1,0 +1,15 @@
+FeatureKeywords:string:modeler:load:fullloading, meshloading:problem_class_only, modeler:load:fastloading, la:macromodel, front:parametersweep, DELETERESULTS:M0P0, modeler:variables:rebuild, modeler:variables:fullrebuild, mesh::background::boolean, mesh:workflow:LegacyInput_from_CST_Studio_2020, mesh:workflow:nru, mesh:workflow:boolean, mesh:workflow:boolean:advanced, mesh::attributes:rstepw, mesh:workflow:cad2srf, mesh:workflow:srf2vol, mesh:lib:blsurf, acceleration:cpu:6, acceleration:cpudevices:1, solver:hf:fd:task:1, monitor:resultfilemap:load, monitor:scaling:peak, monitor:scaling:timeaverage, mesh:tet:adaptive:anisotropicedge, monitor:resultfilemap:save, solver:hf:fd:meshenhancement, la:iterative, la:precond:pdss7, TABLE:UNIT_CHECK:WRITE, lineqssolver:setting:acceleratedrestart, lineqssolver:setting:auto, lineqssolver:setting:treecotree, mesh:tet:adaptive, solver:hf:fd, la:parallel_excitation:block, background:normal, boundary:open:ConvPML, boundary:open:isolated, boundary:open:zmax, boundary:open:zmin, boundary:unit cell:xmax, boundary:unit cell:xmin, boundary:unit cell:ymax, boundary:unit cell:ymin, material:disp:eps, material:disp:modelnth, material:rho, mesh:tet, mesh:tet:autocurvature, mesh:tet:curved, mesh:tet:curved:3, monitor:power:1d, solver:hf:fd:generalpurpose:tet, solver:hf:fd:order:2, source:floquet, units:Capacitance:pF, units:Conductance:S, units:Current:A, units:Frequency:THz, units:Inductance:nH, units:Length:um, units:Resistance:Ohm, units:Temperature:K, units:Time:ns, units:Voltage:V, la:ooc, solver:pp:sparameter:sensitivityanalysis, DELETERESULTS:M000, modeler:boolean:add
+LastWorkflowState:string:tetmesh:success
+solver_hf_tet_fd/InitialFreePhysicalInMB:int:1190
+solver_hf_tet_fd/MaxResidentSizeInMB:int:179
+solver_hf_tet_fd/MaxResidentSizeMiB:int:149
+solver_hf_tet_fd/MinFreePhysicalInMB:int:1113
+solver_pp/InitialFreePhysicalInMB:int:1187
+solver_pp/MaxResidentSizeInMB:int:24
+solver_pp/MaxResidentSizeMiB:int:6
+solver_pp/MinFreePhysicalInMB:int:1187
+tetmesh/InitialFreePhysicalInMB:int:1207
+tetmesh/MaxResidentSizeInMB:int:71
+tetmesh/MaxResidentSizeMiB:int:52
+tetmesh/MinFreePhysicalInMB:int:1207
+---

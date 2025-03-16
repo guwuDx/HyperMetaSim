@@ -1,0 +1,51 @@
+20100312
+[start]hidden_objects
+[end]hidden_objects
+[start]draw_workplane
+true
+[end]draw_workplane
+[start]draw_bounding_box
+true
+[end]draw_bounding_box
+[start]draw_wireframe
+false
+[end]draw_wireframe
+[start]draw_port_wireframe
+false
+[end]draw_port_wireframe
+[start]navigation_tree_text_files
+[end]navigation_tree_text_files
+[start]history_expert_mode
+[start]2025_2_11
+backup();delete(3 9 11 );edit(4 5 9 12 13 );
+[end]2025_2_11
+[start]2025_2_25
+delete(10 );edit(9 10 );
+[end]2025_2_25
+[start]2025_3_5
+delete(10 11 12 13 14 15 );
+[end]2025_3_5
+[start]2025_3_6
+delete(2 );edit(7 );
+[end]2025_3_6
+[start]2025_3_8
+delete(5 );
+[end]2025_3_8
+[end]history_expert_mode
+[start]history_fast_undo
+[end]history_fast_undo
+[start]PortAndLumpedLabelState
+[start]ShowLabels
+1
+[end]ShowLabels
+[start]ShowLabelsShort
+1
+[end]ShowLabelsShort
+[start]ZoomDependPortLabels
+1
+[end]ZoomDependPortLabels
+[end]PortAndLumpedLabelState
+[start]adaption_criteria_store
+[end]adaption_criteria_store
+[start]diagnostic_info
+[end]diagnostic_info

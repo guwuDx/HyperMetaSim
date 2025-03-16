@@ -447,7 +447,10 @@ def set_basic_params(csth,
     n_re, _, _, _ = misc.dielectric2refractive(float(re), float(im))
 
     # calculate floquet boundaries and enable modes
-    _, enable_modes = misc.floquet_evaluator(n_re, freq_max, p, theta, phi)
+    print("[INFO] Calculating Floquet boundaries and enable modes of Zmin")
+    _, zmin_enable_modes = misc.floquet_evaluator(n_re, freq_max, p, theta, phi)
+    print("[INFO] Calculating Floquet boundaries and enable modes of Zmax")
+    _, zmax_enable_modes = misc.floquet_evaluator(   1, freq_max, p, theta, phi)
 
     # update background and its material
     canvas = Canvas()
@@ -459,7 +462,7 @@ def set_basic_params(csth,
     canvas.send(csth, "Set background")
 
     # update the number of modes
-    vbas = Canvas.vba_template.set_floquet_port_boundaries(enable_modes, farfield_distance=farfield)
+    vbas = Canvas.vba_template.set_floquet_port_boundaries(zmax_enable_modes, zmin_enable_modes, farfield_distance=farfield)
     canvas.write(vbas)
     canvas.preview(0)
     canvas.send(csth, "Set Floquet port boundaries")

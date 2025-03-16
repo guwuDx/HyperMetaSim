@@ -254,7 +254,7 @@ End With
 
 
         @staticmethod
-        def set_floquet_port_boundaries(enable_modes, farfield_distance):
+        def set_floquet_port_boundaries(zmax_enable_modes, zmin_enable_modes, farfield_distance):
             return f"""
 With FloquetPort
      .Reset
@@ -266,11 +266,11 @@ With FloquetPort
      .SetSortCode "+beta/pw" 
      .SetCustomizedListFlag "False" 
      .Port "Zmin" 
-     .SetNumberOfModesConsidered "{enable_modes}" 
+     .SetNumberOfModesConsidered "{zmin_enable_modes}" 
      .SetDistanceToReferencePlane "0.0" 
      .SetUseCircularPolarization "False" 
      .Port "Zmax" 
-     .SetNumberOfModesConsidered "{enable_modes}" 
+     .SetNumberOfModesConsidered "{zmax_enable_modes}" 
      .SetDistanceToReferencePlane "-{farfield_distance}" 
      .SetUseCircularPolarization "False" 
 End With

@@ -3,6 +3,8 @@ import toml
 import numpy as np
 
 from tabulate import tabulate
+from sqlalchemy import create_engine
+import MySQLdb
 
 
 def read_toml(file_path, chunk_name):
@@ -306,19 +308,36 @@ def sparam_id(sparam_name: str, sparam_id: int):
         return None
 
 
+# read config & connect to MySQL
+def connect_to_mysql(method:str):
+    print("[INFO] Connecting to MySQL database")
+    mysql_config = read_toml("./config/service.toml", "mysql")
+    if method == "MySQLdb":
+        conn = {
+            "host": mysql_config["host"],
+            "port": mysql_config["port"],
+            "user": mysql_config["user"],
+            "passwd": mysql_config["password"],
+            "db": mysql_config["database"],
+            "charset": "utf8mb4"
+        }
+        cursor = MySQLdb.connect(**conn).cursor()
+        return cursor
+
+
 def print_logo():
     print(r"""
-   __ __
-  / // /      __  __    . . . . . . . . . . . . . .
- / // /      / / / /__  __ ____   ___   _____      
-/ // /      / /_/ // / / // __ \ / _ \ / ___/          __ __
-\ \\ \     / __  // /_/ // /_/ //  __// /              \_\\_\
- \ \\ \   /_/ /_/ \__, // .___/ \___//_/ \   \ BY:      \ \\ \
-  \ \\ \         /____//_/    ===========/    \ guwudx   \ \\ \
+   __    _  _  _  _  _  _  _  _
+  / /__       __  __            \ _  _  _  _  _  _  _
+ / // /      / / / /__  __ ____   ___   _____
+/ // /      / /_/ // / / // __ \ / _ \ / ___/             __
+\ \\ \     / __  // /_/ // /_/ //  __// /               __\_\
+ \ \\ \   /_/ /_/ \__, // .___/ \___//_/ \   \ BY:      \_\\ \
+  \ \\_\         /____//_/    ===========/    \ guwudx   \ \\ \
    \_\\_\      __  __       _          ___  _  \ GPL 3.0  \ \\ \
-    \_\\_\    |  \/  | ___ | |_  __ _ / __|(_) _ __        \ \\ \
+    \_\       |  \/  | ___ | |_  __ _ / __|(_) _ __        \ \\ \
               | |\/| |/ -_)|  _|/ _` |\__ \| || '  \       / // /
-              |_|  |_|\___| \__|\__,_||___/|_||_|_|_|     / // /
-            - - - - - - - - - - - - - - - - - - - - - -  /_//_/
+              |_|  |_|\___| \__|\__,_||___/|_||_|_|_|     /_// /
+            - - - - - - - - - - - - - - - - - - - - - - -   /_/
     """)
     print("<<<<<<<<<<<<<<<<<<<<<< CST Automation >>>>>>>>>>>>>>>>>>>>>>")
