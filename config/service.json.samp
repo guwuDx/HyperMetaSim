@@ -1,0 +1,33 @@
+{
+  "cst": {
+    "cst_py_lib_path": "/Path/To/CST Studio Suite 2022/AMD64/python_cst_libraries",
+    "projects_path": "/Path/To/Prjs",
+    "version": 2022,
+    "permanent_path": "/Path/To/permanent",
+    "vba_save_path": "logs/vba/",
+    "materials_path": "materials/",
+    "solver_timeout": 300
+  },
+  "drc": {
+    "padding": 0.04,
+    "h_l_ratio_upper_bound": 20
+  },
+  "acc_dc": {
+    "max_num_of_cpu_devs": 2,
+    "max_threads": 1024,
+    "max_params_parallel": 0,
+    "only_0D1D": false,
+    "use_shared_dir": false,
+    "use_dc_mem_setting": false,
+    "min_dc_mem_limit": 0,
+    "remote_mesh": false
+  },
+  "mysql": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "123456",
+    "database": "mcb_test",
+    "pool": {}
+  }
+}

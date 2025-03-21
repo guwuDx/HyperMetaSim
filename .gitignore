@@ -1,4 +1,4 @@
-config/service.toml
+config/service.json
 logs/*
 prjs/instances/*
 prjs/permanent/*

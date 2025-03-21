@@ -11,7 +11,7 @@ from cst.interface import DesignEnvironment
 # project_name = "square_pillar"
 _template_path = "/templates/"
 _instance_path = "/instances/"
-_projects_path = misc.read_toml("./config/service.toml", "cst")["projects_path"]
+_projects_path = misc.read_config("./config/service.json", "cst")["projects_path"]
 
 class CSTHandler:
     class _DRC:
@@ -91,7 +91,7 @@ class CSTHandler:
 
 
     def open_template(self, metastructure_type):
-        projects_path = misc.read_toml("./config/service.toml", "cst")["projects_path"]
+        projects_path = misc.read_config("./config/service.json", "cst")["projects_path"]
 
         source_project_path = f"{projects_path}{self._template_path}{metastructure_type}.cst"
         print("[INFO] Opening project: " + source_project_path)
@@ -199,14 +199,14 @@ class CSTHandler:
 
     def _get_cnf(self):
         print("[INFO] Reading CST configurations ...")
-        cnf = misc.read_toml("./config/service.toml", "cst")
+        cnf = misc.read_config("./config/service.json", "cst")
         self._projects_path = cnf["projects_path"]
         # self._permanent_path = cnf["permanent_path"]
         self._template_path = cnf.get("template_path", _template_path)
         self._instance_path = cnf.get("instance_path", _instance_path)
         self._permanent_path = cnf.get("permanent_path")
 
-        drc = misc.configure_drc()
+        drc = misc.read_config("./config/service.json", "drc")
         self._DRC.h_l_ratio_upper_bound = drc["h_l_ratio_upper_bound"]
         units = drc.get("geometric_units", "um")
         if units == "um":
@@ -219,7 +219,7 @@ class CSTHandler:
             print("[ERRO] Unsupported geometric units")
             raise ValueError("Unsupported geometric units, could only be um, mm or nm")
 
-        acc_dc = misc.configure_acc_and_dc()
+        acc_dc = misc.read_config("./config/service.json", "acc_dc")
         self._ACC_DC.max_num_of_cpu_devs    = acc_dc.get("max_num_of_cpu_devs", 1)
         self._ACC_DC.max_threads            = acc_dc.get("max_threads", 1024)
 

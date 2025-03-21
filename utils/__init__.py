@@ -1,7 +1,7 @@
 import importlib
-from utils.misc import read_toml
+from utils.misc import read_config
 
-version = read_toml("./config/service.toml", "cst")["version"]
+version = read_config("./config/service.json", "cst")["version"]
 print(f"[INFO] configued CST version: {version}")
 print(f"[INFO] importing libraries for CST version: {version}")
 

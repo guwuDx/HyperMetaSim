@@ -267,7 +267,7 @@ With FloquetPort
      .SetCustomizedListFlag "False" 
      .Port "Zmin" 
      .SetNumberOfModesConsidered "{zmin_enable_modes}" 
-     .SetDistanceToReferencePlane "0.0" 
+     .SetDistanceToReferencePlane "-h1" 
      .SetUseCircularPolarization "False" 
      .Port "Zmax" 
      .SetNumberOfModesConsidered "{zmax_enable_modes}" 

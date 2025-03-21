@@ -1,5 +1,5 @@
 import sys
-import toml
+import json
 import numpy as np
 
 from tabulate import tabulate
@@ -7,25 +7,18 @@ from sqlalchemy import create_engine
 import MySQLdb
 
 
-def read_toml(file_path, chunk_name):
-    with open(file_path, 'r') as f:
-        config = toml.load(f)
-    return config[chunk_name]
+def read_config(file_path: str, key: str = None):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    if key:
+        return config[key]
+    return config
 
 
 def add_cst_lib_path():
-    lib_path = read_toml("./config/service.toml", "cst")["cst_py_lib_path"]
+    lib_path = read_config("./config/service.json", "cst")["cst_py_lib_path"]
     sys.path.append(lib_path)
 
-
-def configure_drc():
-    drc_config = read_toml("./config/service.toml", "drc")
-    return drc_config
-
-
-def configure_acc_and_dc():
-    acc_dc_config = read_toml("./config/service.toml", "acc_dc")
-    return acc_dc_config
 
 def ranges(start, end, step):
     if start==end:
@@ -311,7 +304,7 @@ def sparam_id(sparam_name: str, sparam_id: int):
 # read config & connect to MySQL
 def connect_to_mysql(method:str):
     print("[INFO] Connecting to MySQL database")
-    mysql_config = read_toml("./config/service.toml", "mysql")
+    mysql_config = read_config("./config/service.json", "mysql")
     if method == "MySQLdb":
         conn = {
             "host": mysql_config["host"],
@@ -323,6 +316,9 @@ def connect_to_mysql(method:str):
         }
         cursor = MySQLdb.connect(**conn).cursor()
         return cursor
+    elif method == "sqlalchemy":
+        engine = create_engine(f"mysql+pymysql://{mysql_config['user']}:{mysql_config['password']}@{mysql_config['host']}:{mysql_config['port']}/{mysql_config['database']}")
+        return engine
 
 
 def print_logo():

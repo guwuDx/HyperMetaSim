@@ -8,16 +8,16 @@ from utils import results_opts
 
 def main():
 
-    misc.print_logo()
-    prj = r"C:\Users\27950\OneDrive\Desktop\SquarePillar__surface_cstl2\SquarePillar__surface_cstl2.cst"
-    results_opts.cst2mysql(prj)
-    return
+    # misc.print_logo()
+    # prj = r"C:\Users\27950\OneDrive\Desktop\SquarePillar__surface_cstl2\SquarePillar__surface_cstl2.cst"
+    # results_opts.cst2mysql(prj)
+    # return
     # sparam_name = ["SZmax(1),Zmin(2)", "SZmax(2),Zmin(2)", "SZmin(1),Zmin(2)", "SZmax(1),Zmax(2)"]
     # data = results_opts.fetch_sparams(prj, sparam_name, plural=True)
     # return
     cst = cst_handler.CSTHandler()
     cst.open_template("SquarePillar")
-    cst.instantiate_template("SquarePillar__surface_inst", wavelength_min=8, wavelength_max=14)
+    cst.instantiate_template("SquarePillar_Fine_surface_cstl3", wavelength_min=8, wavelength_max=14)
     basic_opts.define_material(cst, "materials", "freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
     materials_opts.SquarePillar(cst).change_substrate("freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
     materials_opts.SquarePillar(cst).change_pillar("freq-r-i_Si_crystal_0.0310-310um_ByFranta-300K_2017")
@@ -25,9 +25,9 @@ def main():
     basic_opts.set_acc_dc(cst)
     basic_opts.set_FDSolver_source(cst, "Zmin", "TM(0,0)")
 
-    param_opts.SquarePillar(cst).set_period_parallel_sweep(p_start=1.8, p_end=2.4, p_step=0.2,
-                                                           h_step=0.25, l_step=0.02,
-                                                           h_start=4, l_start=0.1,
+    param_opts.SquarePillar(cst).set_period_parallel_sweep(p_start=2.8, p_end=3.2, p_step=0.2,
+                                                           h_step=0.25, l_step=0.04,
+                                                           h_start=4, l_start=0.2,
                                                            start_now = False)
     # exec_parallel_sweep_from_list(cst, sweep_list, 3)
 
