@@ -1,10 +1,12 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import sys
 import json
 import numpy as np
+import re
 
 from tabulate import tabulate
-from sqlalchemy import create_engine
-import MySQLdb
 
 
 def read_config(file_path: str, key: str = None):
@@ -251,6 +253,58 @@ def dielectric2refractive(re, im):
     return n.real, n.imag, n, np.abs(n)
 
 
+def load_material(materials_path: str,
+                  material_name: str,
+                  wavelegnth_min: float = None,
+                  wavelegnth_max: float = None,
+                  is_freq=False,
+                  unit="um/THz",
+                  calculate_refractive=False):
+    TOLERANCE = 0.001  # tolerance for frequency range
+    res = []
+
+    if not (wavelegnth_max and wavelegnth_min):
+        logging.warning("wavelegnth_min and wavelegnth_max are not provided, using default values")
+        logging.warning("This may cause performance losses")
+        wavelegnth_min = 0
+        wavelegnth_max = float("inf")
+    elif is_freq:
+        if unit == "um/THz":
+            freq_min = 299 / wavelegnth_max
+            freq_max = 299 / wavelegnth_min
+
+    freq_min = freq_min * (1 - TOLERANCE)
+    freq_max = freq_max * (1 + TOLERANCE)
+    with open(f"{materials_path}/{material_name}.csv", "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            if line.startswith("#"): continue
+
+            freq, re, im = line.replace(" ", "").replace("\n", "").split(",")
+            if float(freq) < freq_min or float(freq) > freq_max:
+                continue
+
+            if calculate_refractive:
+                n_re, n_im, n_complex, n_abs = dielectric2refractive(float(re), float(im))
+                res.append({
+                    "freq": float(freq),
+                    "re": float(re),
+                    "im": float(im),
+                    "n_re": n_re,
+                    "n_im": n_im,
+                    "complex": n_complex,
+                    "abs": n_abs
+                })
+            else:
+                res.append({
+                    "freq": float(freq),
+                    "re": float(re),
+                    "im": float(im)
+                })
+
+    return res
+
+
 def find_closest_idx(lst, target):
     """
     lst: list of numbers
@@ -259,6 +313,69 @@ def find_closest_idx(lst, target):
     """
     lst = list(map(float, lst))
     return min(range(len(lst)), key=lambda i: abs(lst[i] - target))
+
+
+def compensate_substrate(data: np.ndarray,
+                         compensation_length: float,  # in um
+                         compensation_material: str,
+                         wavelength_min: float = None,
+                         wavelength_max: float = None):
+    """
+    compensate_substrate
+
+    data: shape(N,3), each row = [freq(THz), real_part, imag_part]
+    compensation_length: length of substrate (um)
+    compensation_material: material name in local folder
+    wavelength_min, wavelength_max: optional wave range
+
+    Returns data (in-place) with updated real_part, imag_part.
+    """
+    PI = np.pi
+    c0 = 2.998e8  # m/s (speed of light in vacuum)
+
+    # 1) load material data
+    material = load_material(
+        "./materials",
+        compensation_material,
+        wavelegnth_min=wavelength_min,
+        wavelegnth_max=wavelength_max,
+        is_freq=True,
+        calculate_refractive=True
+    )
+
+    # 2) convert length to meters
+    length_m = compensation_length * 1e-6
+
+    # extract frequency list from material data
+    freq_list = [entry['freq'] for entry in material]
+
+    # 3) process data
+    for i in range(data.shape[0]):
+        # freq(THz)、real、imag
+        freq_thz = data[i, 0]
+        real_val = data[i, 1]
+        imag_val = data[i, 2]
+
+        # find closest frequency index in material data
+        idx = find_closest_idx(freq_list, freq_thz)
+        n_re = material[idx]["n_re"]
+
+        # frequency in Hz and wave number
+        freq_hz = freq_thz * 1e12
+        k0 = 2.0 * PI * freq_hz / c0
+
+        # phase shift
+        phase_shift = np.exp(1j * k0 * n_re * length_m)
+
+        # complex number multiplication
+        old_complex = real_val + 1j * imag_val
+        new_complex = old_complex * phase_shift
+
+        # update data
+        data[i, 1] = new_complex.real
+        data[i, 2] = new_complex.imag
+
+    return data
 
 
 def sparam_id(sparam_name: str, sparam_id: int):
@@ -299,26 +416,86 @@ def sparam_id(sparam_name: str, sparam_id: int):
     else:
         print("[ERROR] sparam_name or sparam_id is required")
         return None
+    
+
+def identify_param(params: dict, param_info: dict):
+    """
+    eg. params: {"p": 1.0, "h": 2.0, "t": 3.0, "e_theta": 0.0, "e_phi": 0.0, "parameter1": 1.0, "parameter2": 2.0}
+    + param_info: [{
+                    "ID": 1,
+                    "name": "height",
+                    "name_zn": "单元结构高度",
+                    "keywords": [
+                        "h",
+                        "height"
+                    ],
+                    "belongs_to": "generic_parameters"
+               }, { ...
+               }, ...]
+    ↓
+    . param_map: dict
+    |
+    ├── generic_parameters
+    │   ├── period
+    │   ├── height
+    │   ├── thickness
+    │   ├── e_theta
+    │   └── e_phi
+    └── shape__parameters
+        ├── parameter1
+        ├── parameter2
+        ···
+        └── parameterN
+    """
+    param_columns = {}
+    generic_parameters = {}
+    shape_parameters = {}
+    for param, value in params.items():
+        for info in param_info:
+            if param in info["keywords"]:
+                if info["belongs_to"] == "generic_parameters":
+                    generic_parameters[info["name"]] = value
+                else:
+                    shape_parameters[info["name"]] = value
+                break
+        else:
+            logging.exception(f"[ERRO] Parameter {param} not found in param_info")
+            raise ValueError(f"Parameter {param} not found in param_info")
+
+    param_columns["generic_parameters"] = generic_parameters
+    param_columns["shape_parameters"] = shape_parameters
+    return param_columns
 
 
-# read config & connect to MySQL
-def connect_to_mysql(method:str):
-    print("[INFO] Connecting to MySQL database")
-    mysql_config = read_config("./config/service.json", "mysql")
-    if method == "MySQLdb":
-        conn = {
-            "host": mysql_config["host"],
-            "port": mysql_config["port"],
-            "user": mysql_config["user"],
-            "passwd": mysql_config["password"],
-            "db": mysql_config["database"],
-            "charset": "utf8mb4"
-        }
-        cursor = MySQLdb.connect(**conn).cursor()
-        return cursor
-    elif method == "sqlalchemy":
-        engine = create_engine(f"mysql+pymysql://{mysql_config['user']}:{mysql_config['password']}@{mysql_config['host']}:{mysql_config['port']}/{mysql_config['database']}")
-        return engine
+def get_material_name(material_name: str):
+    """
+    material_name: "[Si_crystal]_freq-r-i_0.0310-310um_ByFranta-300K_2017"
+    return: "Si_crystal" 
+    """
+    pattern = r'^\[(.*?)\]'
+    match = re.search(pattern, material_name)
+    if match:
+        material_name = match.group(1)
+    else:
+        logging.error(f"[ERRO] Invalid material name: {material_name}")
+        raise ValueError(f"[ERRO] Invalid material name: {material_name}")
+    return material_name
+
+
+def get_project_properties(project_name: str):
+
+    # project_properties.json is in the same directory as the project file
+    project_properties = project_name.replace(".cst", "/project_properties.json")
+    print(f"[INFO] Reading project properties from {project_properties}")
+
+    try:
+        project_properties = read_config(project_properties)
+    except:
+        print("[ERRO] project_properties.json not found in the project directory")
+        print("[ERRO] make sure the project file was generated by the HyperMetaSim(R) tool")
+        raise FileNotFoundError()
+
+    return project_properties
 
 
 def print_logo():

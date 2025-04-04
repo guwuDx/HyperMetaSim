@@ -1,4 +1,4 @@
-config/service.json
+config/*.json
 logs/*
 prjs/instances/*
 prjs/permanent/*
@@ -7,5 +7,7 @@ prjs/permanent/*
 *.pyo
 *.pyd
 __pycache__/
+
+*.log
 
 venv/*
