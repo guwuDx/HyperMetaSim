@@ -335,10 +335,10 @@ CREATE TABLE IF NOT EXISTS CuboidPillar_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES CuboidPillar_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES CuboidPillar_parameters(ID)
 ) COMMENT '矩形截面方体单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_NIR (
@@ -346,10 +346,10 @@ CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquarePillar_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquarePillar_parameters(ID)
 ) COMMENT '正方形截面方体单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_NIR (
@@ -357,10 +357,10 @@ CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES Cylinder_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES Cylinder_parameters(ID)
 ) COMMENT '圆柱体单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 CREATE TABLE IF NOT EXISTS Cross_freq_resp_NIR (
@@ -368,10 +368,10 @@ CREATE TABLE IF NOT EXISTS Cross_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES Cross_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES Cross_parameters(ID)
 ) COMMENT '十字形单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_NIR (
@@ -379,10 +379,10 @@ CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquareHole_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquareHole_parameters(ID)
 ) COMMENT '方形孔洞单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_NIR (
@@ -390,10 +390,10 @@ CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SymmetricCross_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SymmetricCross_parameters(ID)
 ) COMMENT '对称十字形单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_NIR (
@@ -401,10 +401,10 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquareRing_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquareRing_parameters(ID)
 ) COMMENT '方形环单元结构频率响应参数表(近红外: 1000 ~ 2500nm)';
 
 
@@ -416,10 +416,10 @@ CREATE TABLE IF NOT EXISTS CuboidPillar_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES CuboidPillar_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES CuboidPillar_parameters(ID)
 ) COMMENT '矩形截面方体单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_MIR (
@@ -427,10 +427,10 @@ CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquarePillar_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquarePillar_parameters(ID)
 ) COMMENT '正方形截面方体单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_MIR (
@@ -438,10 +438,10 @@ CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES Cylinder_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES Cylinder_parameters(ID)
 ) COMMENT '圆柱体单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 CREATE TABLE IF NOT EXISTS Cross_freq_resp_MIR (
@@ -449,10 +449,10 @@ CREATE TABLE IF NOT EXISTS Cross_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES Cross_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES Cross_parameters(ID)
 ) COMMENT '十字形单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_MIR (
@@ -460,10 +460,10 @@ CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquareHole_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquareHole_parameters(ID)
 ) COMMENT '方形孔洞单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_MIR (
@@ -471,10 +471,10 @@ CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SymmetricCross_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SymmetricCross_parameters(ID)
 ) COMMENT '对称十字形单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_MIR (
@@ -482,10 +482,10 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquareRing_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquareRing_parameters(ID)
 ) COMMENT '方形环单元结构频率响应参数表(中红外: 2500 ~ 5000nm)';
 
 
@@ -497,10 +497,10 @@ CREATE TABLE IF NOT EXISTS CuboidPillar_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES CuboidPillar_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES CuboidPillar_parameters(ID)
 ) COMMENT '矩形截面方体单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_FIR (
@@ -508,10 +508,10 @@ CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquarePillar_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquarePillar_parameters(ID)
 ) COMMENT '正方形截面方体单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_FIR (
@@ -519,10 +519,10 @@ CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES Cylinder_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES Cylinder_parameters(ID)
 ) COMMENT '圆柱体单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 CREATE TABLE IF NOT EXISTS Cross_freq_resp_FIR (
@@ -530,10 +530,10 @@ CREATE TABLE IF NOT EXISTS Cross_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES Cross_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES Cross_parameters(ID)
 ) COMMENT '十字形单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_FIR (
@@ -541,10 +541,10 @@ CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquareHole_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquareHole_parameters(ID)
 ) COMMENT '方形孔洞单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_FIR (
@@ -552,10 +552,10 @@ CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SymmetricCross_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SymmetricCross_parameters(ID)
 ) COMMENT '对称十字形单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_FIR (
@@ -563,10 +563,10 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
-    GP_ID BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
-    CP_ID BINARY(16) NOT NULL COMMENT '单元结构参数表外键',
-    FOREIGN KEY (GP_ID) REFERENCES generic_parameters(ID),
-    FOREIGN KEY (CP_ID) REFERENCES SquareRing_parameters(ID)
+    `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
+    `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
+    FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
+    FOREIGN KEY (`ShP_ID`) REFERENCES SquareRing_parameters(ID)
 ) COMMENT '方形环单元结构频率响应参数表(远红外: 5000 ~ 14000nm)';
 
 

@@ -137,7 +137,6 @@ def process_import_single_runid(project3d,
     logging.info(f"Processing runid {runid} for {sparam_name}")
 
     sqlh = mcbs.SQLHandler()
-
     param = project3d.get_parameter_combination(runid)
 
     compensation_material = project_properties["substrate_material"]
@@ -150,7 +149,7 @@ def process_import_single_runid(project3d,
     param_columns["generic_parameters"]['s_param_id'] = sqlh.get_sparam_id(sparam_name)
 
     # check and import generic parameters
-    gp_id = sqlh.check_and_insert_param("generic_parameters", param_columns["generic_parameters"])
+    gp_id, is_gen_duplicate = sqlh.check_and_insert_param("generic_parameters", param_columns["generic_parameters"], return_duplicate_status=True)
     sqlh.commit()
     if gp_id is None:
         logging.info(f"No generic parameters found for {sparam_name} with runid {runid}")
@@ -159,10 +158,10 @@ def process_import_single_runid(project3d,
     # check and import shape parameters
     shape = project_properties["type"]
     shape_parameters_table = shape + "_parameters"
-    param_columns["shape_parameters"]["gp_id"] = gp_id
-    cp_id = sqlh.check_and_insert_param(shape_parameters_table, param_columns["shape_parameters"])
+    # param_columns["shape_parameters"]["gp_id"] = gp_id
+    shp_id, is_shp_duplicate = sqlh.check_and_insert_param(shape_parameters_table, param_columns["shape_parameters"], return_duplicate_status=True)
     sqlh.commit()
-    if cp_id is None:
+    if shp_id is None:
         logging.info(f"No shape parameters found for {sparam_name} with runid {runid}")
         return
 
@@ -189,15 +188,15 @@ def process_import_single_runid(project3d,
     # insert data into database
     if far_infrared_data.size:
         table = shape + "_freq_resp_FIR"
-        sqlh.insert_freq_response(table, far_infrared_data, cp_id, force=force)
+        sqlh.insert_freq_response(table, far_infrared_data, gp_id, shp_id, force=force)
         sqlh.commit()
     if mid_infrared_data.size:
         table = shape + "_freq_resp_MIR"
-        sqlh.insert_freq_response(table, mid_infrared_data, cp_id, force=force)
+        sqlh.insert_freq_response(table, mid_infrared_data, gp_id, shp_id, force=force)
         sqlh.commit()
     if near_infrared_data.size:
         table = shape + "_freq_resp_NIR"
-        sqlh.insert_freq_response(table, near_infrared_data, cp_id, force=force)
+        sqlh.insert_freq_response(table, near_infrared_data, gp_id, shp_id, force=force)
         sqlh.commit()
     # logging.info(f"Imported S-parameters for {sparam_name} with runid {runid}")
 

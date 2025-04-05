@@ -61,24 +61,32 @@ class SQLHandler:
             self.cursor.execute(query, tuple(params.values()))
             res = self.cursor.fetchone()
             if res:
-                logging.info(f"Duplicate parameters found in {table}: {res}")
+                # If a duplicate is found, return the ID
                 return res[0]
             else:
+                # No duplicate found
                 return None
         except MySQLdb.Error as e:
             logging.error(f"[ERROR] Failed to check duplicates in {table}: {e}")
             return None
 
 
-    def insert_params(self, table:str, params:dict, auto_commit=False):
+    def insert_params(self, table:str, params:dict, 
+                      uuid=True, auto_commit=False):
         """
         Insert a new record into the specified table with the given parameters.
 
         :param table: The table name. For example 'generic_parameters' or 'CuboidPillar_parameters'.
         :param params: dict of {column_name: value}, which can include bytes (for UUID) or standard numeric types.
+        :param uuid: Whether to auto-generate a UUID for the 'ID' column if not provided.
         :param auto_commit: Whether to auto commit transaction after insertion.
         :return: The lastrowid if insertion succeeds, or False on error.
         """
+        if 'ID' not in params and uuid:
+            # Generate a new UUID for ID if not provided
+            new_uuid6 = uuid6.uuid6()
+            params['ID'] = new_uuid6.bytes
+            logging.debug(f"Auto-generated UUIDv6 for table={table}: {new_uuid6} (bytes={new_uuid6.bytes})")
 
         # Build INSERT statement with placeholders
         columns = ', '.join(params.keys())
@@ -95,7 +103,10 @@ class SQLHandler:
             if auto_commit:
                 self.conn.commit()
             logging.info(f"Inserted parameters into {table} successfully. lastrowid={lastrowid}")
-            return lastrowid
+
+            # If it's an auto-increment table, lastrowid is the real ID.
+            return params.get('ID', lastrowid)
+
         except MySQLdb.Error as e:
             logging.error(f"Failed to insert parameters into {table}: {e}")
             if auto_commit:
@@ -103,7 +114,7 @@ class SQLHandler:
             return False
 
 
-    def check_and_insert_param(self, table:str, params:dict):
+    def check_and_insert_param(self, table:str, params:dict, return_duplicate_status=False):
         """
         Check duplicates and insert if none.
 
@@ -114,16 +125,22 @@ class SQLHandler:
         res = self.check_duplicate_params(table, params)
         if res:
             logging.info(f"Duplicate parameters found in {table}: {res}")
-            return res
+            if return_duplicate_status:
+                return res, True
+            else:
+                return res
         else:
             logging.info(f"No duplicate parameters found in {table}, inserting new row.")
             lastrowid = self.insert_params(table, params)
             if lastrowid is not False:
                 logging.info(f"Parameters inserted into {table}, ID: {lastrowid}")
-            return lastrowid
+            if return_duplicate_status:
+                return lastrowid, False
+            else:
+                return lastrowid
 
 
-    def insert_freq_response(self, table:str, data:dict, foreign_key:int,
+    def insert_freq_response(self, table:str, data:dict, gp_id:int, shp_id:int,
                              auto_commit=False, force=False):
         """
         Insert frequency response data into the specified freq_response table, with duplication checks.
@@ -139,8 +156,8 @@ class SQLHandler:
         data_to_insert = []
 
         insert_sql = f"""
-        INSERT INTO {table} (Frequency, real_pt, imag_pt, CP_ID)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO {table} (ID, Frequency, real_pt, imag_pt, GP_ID, ShP_ID)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """
 
         # data [[freq, real, imag], [freq, real, imag], ...]
@@ -149,12 +166,11 @@ class SQLHandler:
             SELECT ID FROM {table}
             """ + """
               WHERE Frequency=%s
-              AND real_pt=%s
-              AND imag_pt=%s
-              AND CP_ID=%s;
+                AND GP_ID=%s
+                AND ShP_ID=%s;
             """
             try:
-                self.cursor.execute(query, (freq, real_val, imag_val, foreign_key))
+                self.cursor.execute(query, (freq, gp_id, shp_id))
                 res = self.cursor.fetchone()
             except MySQLdb.Error as e:
                 logging.error(f"[ERROR] Querying duplicates in {table} failed: {e}")
@@ -199,7 +215,8 @@ class SQLHandler:
                     continue
             else:
                 duplicate_cnt = 0
-                data_to_insert.append((freq, real_val, imag_val, foreign_key))
+                uuid = uuid6.uuid6().bytes
+                data_to_insert.append((uuid, freq, real_val, imag_val, gp_id, shp_id))
 
         # After loop, insert the leftover data
         try:
