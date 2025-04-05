@@ -6,10 +6,9 @@ import utils.mcbs as mcbs
 import cst.results
 
 import numpy as np
-import threading
 from tqdm import tqdm
 from typing import List
-from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
 
 
 
@@ -134,7 +133,9 @@ def process_import_single_runid(project3d,
                                 M_F_idx:int,
                                 compensation=0,
                                 force=False):
-    logging.info(f"Processing runid {runid} for {sparam_name}")
+    context_str = f"Thread/{sparam_name};runid:{runid}"
+    adapter = logging.LoggerAdapter(logging.getLogger(__name__), {'context': context_str})
+    adapter.info(f"Processing runid {runid} for {sparam_name}")
 
     sqlh = mcbs.SQLHandler()
     param = project3d.get_parameter_combination(runid)
@@ -152,7 +153,7 @@ def process_import_single_runid(project3d,
     gp_id, is_gen_duplicate = sqlh.check_and_insert_param("generic_parameters", param_columns["generic_parameters"], return_duplicate_status=True)
     sqlh.commit()
     if gp_id is None:
-        logging.info(f"No generic parameters found for {sparam_name} with runid {runid}")
+        adapter.info(f"No generic parameters found for {sparam_name} with runid {runid}")
         return
 
     # check and import shape parameters
@@ -162,13 +163,13 @@ def process_import_single_runid(project3d,
     shp_id, is_shp_duplicate = sqlh.check_and_insert_param(shape_parameters_table, param_columns["shape_parameters"], return_duplicate_status=True)
     sqlh.commit()
     if shp_id is None:
-        logging.info(f"No shape parameters found for {sparam_name} with runid {runid}")
+        adapter.info(f"No shape parameters found for {sparam_name} with runid {runid}")
         return
 
     # process data
     data = project3d.get_result_item(f"1D Results\\S-Parameters\\{sparam_name}", runid).get_data()
     if len(data[0]) > 2:
-        logging.warning(f"Data length is greater than 2, deleting extra columns (probably including Ref.Imp.)")
+        adapter.warning(f"Data length is greater than 2, deleting extra columns (probably including Ref.Imp.)")
         data = [row[:2] for row in data]
     data = np.array([
         [freq, z.real, z.imag] for freq, z in data
@@ -177,7 +178,7 @@ def process_import_single_runid(project3d,
     wavelength_min = project_properties["wavelength_min"]
     wavelength_max = project_properties["wavelength_max"]
     if compensation:
-        logging.info(f"Compensating substrate for {sparam_name} with runid {runid}")
+        adapter.info(f"Compensating substrate for {sparam_name} with runid {runid}")
         data = misc.compensate_substrate(data, compensation, compensation_material,
                                          wavelength_min, wavelength_max)
 
@@ -202,7 +203,13 @@ def process_import_single_runid(project3d,
 
 def cst2mysql(project_name, 
               force=False, 
+              parallel_num=0,
               compensation_length=0):
+    max_workers = parallel_num
+    if max_workers:
+        logger.warning("Using threads for importing data, this may cause issues if the database is not thread-safe.")
+    # max_workers = 5
+    logging.info(f"Using {max_workers} threads for importing data")
 
     project = cst.results.ProjectFile(project_name)
     if project:
@@ -234,22 +241,69 @@ def cst2mysql(project_name,
         logging.info(f"No S-parameters found, the project may not have been simulated")
         return
 
-    cnt = 0
-    for sparam_name in sparam_names:
-        runids = project3d.get_run_ids(f"1D Results\\S-Parameters\\{sparam_name}", True)
-        for runid in runids:
-            cnt += 1
-            print(f"--------------------- {cnt}")
-            process_import_single_runid(project3d,
-                                        project_properties,
-                                        param_info,
-                                        runid,
-                                        substrate_material_id,
-                                        pillar_material_id,
-                                        sparam_name,
-                                        N_M_idx,
-                                        M_F_idx,
-                                        compensation=compensation_length,
-                                        force=force)
+    if max_workers:
+        logging.info(f"Using {max_workers} threads for importing data")
+        logger.warning("Using threads for importing data, this may cause issues if the database is not thread-safe.")
+        tasks = []
+        for sparam_name in sparam_names:
+            runids = project3d.get_run_ids(f"1D Results\\S-Parameters\\{sparam_name}", True)
+            if not runids:
+                logging.info(f"No S-parameters found for {sparam_name}, the project may not have been simulated")
+                continue
+            for runid in runids:
+                tasks.append((project3d, project_properties, param_info, 
+                            runid, substrate_material_id, pillar_material_id,
+                            sparam_name, N_M_idx, M_F_idx, compensation_length, force))
+
+        logging.info(f"Total tasks to process: {len(tasks)}")
+
+        def task_wrapper(args):
+            (project3d, project_properties, param_info, 
+            runid, substrate_material_id, pillar_material_id,
+            sparam_name, N_M_idx, M_F_idx, compensation_length, force) = args
+
+            process_import_single_runid(
+                project3d               = project3d,
+                project_properties      = project_properties,
+                param_info              = param_info,
+                runid                   = runid,
+                substrate_material_id   = substrate_material_id,
+                pillar_material_id      = pillar_material_id,
+                sparam_name             = sparam_name,
+                N_M_idx                 = N_M_idx,
+                M_F_idx                 = M_F_idx,
+                compensation            = compensation_length,
+                force                   = force
+            )
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # schedule tasks
+            futures = [executor.submit(task_wrapper, t) for t in tasks]
+
+            # use tqdm to show progress bar for all tasks
+            for _ in tqdm(concurrent.futures.as_completed(futures),
+                        total=len(futures),
+                        desc="Importing data",
+                        unit="task"):
+                pass
+    else:
+        logger.info("Using single thread for importing data")
+        cnt = 0
+        for sparam_name in sparam_names:
+            runids = project3d.get_run_ids(f"1D Results\\S-Parameters\\{sparam_name}", True)
+            for runid in runids:
+                cnt += 1
+                print(f"--------------------- {cnt}")
+                process_import_single_runid(project3d,
+                                            project_properties,
+                                            param_info,
+                                            runid,
+                                            substrate_material_id,
+                                            pillar_material_id,
+                                            sparam_name,
+                                            N_M_idx,
+                                            M_F_idx,
+                                            compensation=compensation_length,
+                                            force=force)
 
     return
