@@ -1,4 +1,5 @@
 from DBUtils.PooledDB import PooledDB
+import uuid6
 import json
 import MySQLdb
 import logging
@@ -42,60 +43,98 @@ class SQLHandler:
         self.cursor = self.conn.cursor()
 
 
-    def check_duplicate_params(self, table:str, params:dict):
-        query = f"SELECT ID FROM {table}\n"
+    def check_duplicate_params(self, table: str, params: dict):
+        """
+        Check if a row with the same parameter values exists in the given table.
 
-        param_values = '\n  AND '.join(f"{k}={v}" for k, v in params.items())
-        query += f"WHERE {param_values};"
+        :param table: Table name. Example: 'CuboidPillar_parameters'.
+        :param params: dict of {column_name: value}, where value can be int, float, str, bytes(UUID), etc.
+        :return: The 'ID' if a duplicate row is found, otherwise None.
+        """
 
-        self.cursor.execute(query)
-        res = self.cursor.fetchone()
+        # Build WHERE clause with placeholders (e.g. "col1=%s AND col2=%s ...")
+        where_clause = ' AND '.join(f"{k}=%s" for k in params.keys())
+        query = f"SELECT ID FROM {table} WHERE {where_clause};"
 
-        if res:
-            logging.info(f"Duplicate parameters found in {table}: {res}")
-            return res[0]
-        else:
+        try:
+            # Use tuple(...) to pass the values so that it won't raise 'not all arguments converted' error
+            self.cursor.execute(query, tuple(params.values()))
+            res = self.cursor.fetchone()
+            if res:
+                logging.info(f"Duplicate parameters found in {table}: {res}")
+                return res[0]
+            else:
+                return None
+        except MySQLdb.Error as e:
+            logging.error(f"[ERROR] Failed to check duplicates in {table}: {e}")
             return None
 
 
     def insert_params(self, table:str, params:dict, auto_commit=False):
-        insert_sql = f"""
-        INSERT INTO {table}"""
+        """
+        Insert a new record into the specified table with the given parameters.
 
+        :param table: The table name. For example 'generic_parameters' or 'CuboidPillar_parameters'.
+        :param params: dict of {column_name: value}, which can include bytes (for UUID) or standard numeric types.
+        :param auto_commit: Whether to auto commit transaction after insertion.
+        :return: The lastrowid if insertion succeeds, or False on error.
+        """
+
+        # Build INSERT statement with placeholders
         columns = ', '.join(params.keys())
-        values = ', '.join(['%s'] * len(params))
-
-        insert_sql += f" ({columns}) VALUES ({values})"
+        placeholders = ', '.join(['%s'] * len(params))
+        insert_sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
 
         # logging.info(insert_sql)
         # logging.info(params.values())
         try:
+            # Execute with parameter binding
             self.cursor.execute(insert_sql, tuple(params.values()))
             lastrowid = self.cursor.lastrowid
+
             if auto_commit:
                 self.conn.commit()
-            logging.info(f"Inserted parameters into {table} successfully.")
+            logging.info(f"Inserted parameters into {table} successfully. lastrowid={lastrowid}")
+            return lastrowid
         except MySQLdb.Error as e:
             logging.error(f"Failed to insert parameters into {table}: {e}")
             if auto_commit:
                 self.conn.rollback()
             return False
-        return lastrowid
 
 
     def check_and_insert_param(self, table:str, params:dict):
+        """
+        Check duplicates and insert if none.
+
+        :param table: The table name.
+        :param params: The parameter dict for insertion.
+        :return: ID of the existing or newly inserted row, or False if insertion fails.
+        """
         res = self.check_duplicate_params(table, params)
         if res:
             logging.info(f"Duplicate parameters found in {table}: {res}")
             return res
         else:
-            logging.info(f"No duplicate parameters found in {table}")
+            logging.info(f"No duplicate parameters found in {table}, inserting new row.")
             lastrowid = self.insert_params(table, params)
-            logging.info(f"Parameters inserted into {table}, ID: {lastrowid}")
+            if lastrowid is not False:
+                logging.info(f"Parameters inserted into {table}, ID: {lastrowid}")
             return lastrowid
 
 
-    def insert_freq_response(self, table:str, data:dict, foreign_key:int, auto_commit=False, force=False):
+    def insert_freq_response(self, table:str, data:dict, foreign_key:int,
+                             auto_commit=False, force=False):
+        """
+        Insert frequency response data into the specified freq_response table, with duplication checks.
+
+        :param table: e.g. 'CuboidPillar_freq_resp_NIR'
+        :param data: list of [freq, real_pt, imag_pt], e.g. [[33.1, 0.25, 0.39], [33.2, 0.26, 0.40], ...]
+        :param foreign_key: The CP_ID or relevant BINARY(16) ID (or int ID if table expects that).
+        :param auto_commit: Whether to commit automatically.
+        :param force: If True, continue inserting despite duplicates (except hitting MAX_DUPLICATE_ALLOWED).
+        :return: True if all inserted, False if error or too many duplicates found.
+        """
         duplicate_cnt = 0
         data_to_insert = []
 
@@ -105,7 +144,7 @@ class SQLHandler:
         """
 
         # data [[freq, real, imag], [freq, real, imag], ...]
-        for freq, real, imag in data:
+        for freq, real_val, imag_val in data:
             query = f"""
             SELECT ID FROM {table}
             """ + """
@@ -114,19 +153,27 @@ class SQLHandler:
               AND imag_pt=%s
               AND CP_ID=%s;
             """
-            self.cursor.execute(query, (freq, real, imag, foreign_key))
-            res = self.cursor.fetchone()
+            try:
+                self.cursor.execute(query, (freq, real_val, imag_val, foreign_key))
+                res = self.cursor.fetchone()
+            except MySQLdb.Error as e:
+                logging.error(f"[ERROR] Querying duplicates in {table} failed: {e}")
+                if auto_commit:
+                    self.conn.rollback()
+                return False
+
             if res:
                 duplicate_cnt += 1
                 # logging.info("x")
                 if duplicate_cnt >= MAX_DUPLICATE_ALLOWED:
                     logging.warning(f"Too Many duplicate frequency response found in {table}: {res}")
                     if force:
+                        # Force mode: continue scanning rest
                         duplicate_cnt = -1
-                        logging.info(f"Force mode enabled, scanning for remaining data...")
+                        logging.info("Force mode enabled, ignoring duplicates for the rest data.")
                         continue
-                    logging.info("Importing exiting data...")
 
+                    logging.info("No force mode => partial import of existing data_to_insert.")
                     if data_to_insert:
                         try:
                             self.cursor.executemany(insert_sql, data_to_insert)
@@ -145,18 +192,25 @@ class SQLHandler:
                             self.conn.rollback()
                         return False
                 elif duplicate_cnt < 0:
+                    # Means we are in 'force' ignoring duplicates
                     continue
-                continue
+                else:
+                    # Normal duplicate, just skip
+                    continue
             else:
                 duplicate_cnt = 0
-                data_to_insert.append((freq, real, imag, foreign_key))
-        # logging.info(insert)
+                data_to_insert.append((freq, real_val, imag_val, foreign_key))
 
+        # After loop, insert the leftover data
         try:
-            self.cursor.executemany(insert_sql, data_to_insert)
-            if auto_commit:
-                self.conn.commit()
-            logging.info(f"Inserted all data ({len(data_to_insert)} records) successfully.")
+            if data_to_insert:
+                self.cursor.executemany(insert_sql, data_to_insert)
+                if auto_commit:
+                    self.conn.commit()
+                logging.info(f"Inserted all data ({len(data_to_insert)} records) successfully in {table}.")
+            else:
+                logging.info("No data to insert or all duplicates found.")
+            return True
         except MySQLdb.Error as e:
             logging.error(f"Failed to insert data into {table}: {e}")
             if auto_commit:

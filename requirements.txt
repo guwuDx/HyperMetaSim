@@ -42,5 +42,6 @@ toml==0.10.2
 tqdm==4.67.1
 typing_extensions==4.12.2
 tzdata==2024.2
+uuid6==2024.7.10
 virtualenv==20.28.1
 zipp==3.21.0
