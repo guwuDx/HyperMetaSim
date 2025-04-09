@@ -472,7 +472,7 @@ def get_material_name(material_name: str):
     material_name: "[Si_crystal]_freq-r-i_0.0310-310um_ByFranta-300K_2017"
     return: "Si_crystal" 
     """
-    pattern = r'^\[(.*?)\]'
+    pattern = r'^\=(.*?)\='
     match = re.search(pattern, material_name)
     if match:
         material_name = match.group(1)

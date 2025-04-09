@@ -275,7 +275,6 @@ CREATE TABLE IF NOT EXISTS generic_parameters (
     `thickness` DECIMAL(12,6) NOT NULL COMMENT '单元结构基底厚度',
     `E_theta` DOUBLE NOT NULL COMMENT '入射角 theta',
     `E_phi` DOUBLE NOT NULL COMMENT '入射角 phi',
-    `hash` CHAR(32) NULL COMMENT '基本参数哈希值',
     FOREIGN KEY (`substrate_material_id`) REFERENCES material_def(ID),
     FOREIGN KEY (`pillar_material_id`) REFERENCES material_def(ID),
     FOREIGN KEY (`S_Param_id`) REFERENCES s_parameter(ID)
