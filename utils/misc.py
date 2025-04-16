@@ -241,7 +241,7 @@ def farfield_evaluator(lambda_um:   int,
             print("[ERROR] p_um is required for strict mode")
             raise ValueError("p_um is required for strict mode")
         return (20 * n * p_um * 1.41) / lambda_um
-    
+
 
 def dielectric2refractive(re, im):
     """

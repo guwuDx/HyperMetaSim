@@ -203,6 +203,7 @@ def process_import_single_runid(project3d,
 
 def cst2mysql(project_name, 
               force=False, 
+              s_param_list=[],
               parallel_num=0,
               compensation_length=0):
     max_workers = parallel_num

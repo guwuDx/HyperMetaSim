@@ -5,6 +5,8 @@ import os
 import time
 import json
 
+from typing import Dict
+
 misc.add_cst_lib_path()
 from cst.interface import DesignEnvironment
 
@@ -12,6 +14,15 @@ from cst.interface import DesignEnvironment
 _template_path = "/templates/"
 _instance_path = "/instances/"
 _projects_path = misc.read_config("./config/service.json", "cst")["projects_path"]
+
+
+
+class CSTProjectWrapper:
+    def __init__(self, project_instance, project_properties:dict):
+        self.project_instance = project_instance
+        self.project_properties = project_properties
+
+
 
 class CSTHandler:
     class _DRC:
@@ -53,7 +64,8 @@ class CSTHandler:
             "pillar_material": "",
             "farfield": None
         }
-        self.prjs = pd.DataFrame(columns=["project_instance", "project_properties"])
+        # self.prjs = pd.DataFrame(columns=["project_instance", "project_properties"])
+        self.projects: Dict[str, CSTProjectWrapper] = {}
         self._get_cnf()
 
         if pid: self._conn_de(pid)
@@ -119,12 +131,16 @@ class CSTHandler:
         from utils import basic_opts
 
         crr_prj_type = self.crr_prj_properties["type"]
+        # project_name = project_name + "_" + str(uuid4())[:6]
 
         print("[INFO] Instantiating Project ...")
         instance_project_path = f"{self._projects_path}{self._instance_path}/{crr_prj_type}/{project_name}.cst"
         self.crr_prj.save(path=instance_project_path, include_results=False)
         print("[ OK ] Project instantiated successfully")
-        print("[INFO] current project is: ", self.crr_prj.filename())
+        full_name = self.crr_prj.filename()
+        file_name = os.path.basename(full_name)[__file__:-4]
+        print("[INFO] Project name is: ", file_name)
+        print("[INFO] current project is: ", full_name)
 
         basic_opts.set_prj_wavelength(self, wavelength_min, wavelength_max)
         self.crr_prj_properties["type"] = crr_prj_type
@@ -134,14 +150,47 @@ class CSTHandler:
         self.crr_prj_properties["farfield"] = wavelength_max
         # self.crr_prj_properties["farfield"] = misc.farfield_evaluator(wavelength_min)
 
-        prj_dict = [{
-            "project_instance": self.crr_prj, 
-            "project_properties": self.crr_prj_properties
-        }]
-        self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+        self.projects[full_name] = CSTProjectWrapper(
+            project_instance=self.crr_prj,
+            project_properties=self.crr_prj_properties
+        )
 
         # crr_proj = de.get_open_projects()
         # print(crr_proj[0], '\n---')
+
+
+    def build_project_vba(self, shape_type, prj_name, wavelength_min, wavelength_max, save=False):
+        # self.restore_properties()
+        from .build_model import SquarePillar
+
+        self.crr_prj = self.de.new_mws()
+        temp_file_name = self.crr_prj.filename()
+
+        self.crr_prj_properties["type"] = shape_type
+        self.crr_prj_properties["wavelength_min"] = wavelength_min
+        self.crr_prj_properties["wavelength_max"] = wavelength_max
+
+        self.crr_prj_properties["farfield"] = wavelength_max
+        # self.crr_prj_properties["farfield"] = misc.farfield_evaluator(wavelength_min)
+
+        if shape_type == "SquarePillar":
+            SquarePillar(self)
+
+        else:
+            print("[ERRO] Unsupported shape type")
+            raise ValueError("Unsupported shape type")
+
+        self.crr_prj.activate()
+        # restore current project properties
+        self.restore_properties()
+
+        if save:
+            print("[INFO] Saving project ...")
+            self.crr_prj.save(path=f"{self._projects_path}{self._instance_path}/{shape_type}/{prj_name}.cst",
+                              include_results=False)
+            self.restore_properties()
+            self.delete_project(temp_file_name)
+            print("[ OK ] Project saved successfully")
 
 
     def send_vba(self,
@@ -159,7 +208,7 @@ class CSTHandler:
                    prj=None,
                    blocked:     bool = True,
                    timeout:     int  = None,
-                   safe_mode:   bool = True
+                   safe_mode:   bool = False
                    ):
 
         if not prj:
@@ -237,7 +286,8 @@ class CSTHandler:
 
     def save_crr_prj(self):
         print("[INFO] Saving current project ...")
-        self.crr_prj.save()
+        self.crr_prj.save(self.crr_prj.filename())
+        self.update_project_properties()
         self.write_properties()
         print("[ OK ] Project saved successfully")
 
@@ -247,30 +297,22 @@ class CSTHandler:
         self.save_crr_prj()
 
         # get the current project name and path
-        filename = self.crr_prj.filename()
-        prj_path = os.path.dirname(filename)
+        full_name = self.crr_prj.filename()
+        prj_path = os.path.dirname(full_name)
 
         # duplicate the project and its properties
         # ppts = self.crr_prj_properties
-        index_to_drop = self.prjs[self.prjs["project_instance"] == self.crr_prj].index
-        self.prjs = self.prjs.drop(index_to_drop).reset_index(drop=True)
         self.crr_prj.save(path=f"{prj_path}/{new_prj_name}.cst", include_results=False)
+        print("[INFO] Duplicated project is: ", self.crr_prj.filename())
 
         # restore the new project and its properties
-        prj_dict = [{
-            "project_instance": self.crr_prj, 
-            "project_properties": self.crr_prj_properties
-        }]
-        self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+        self.restore_properties()
         new_prj = self.crr_prj
 
         # recover the duplicated project
-        self.crr_prj = self.de.open_project(filename)
-        prj_dict = [{
-            "project_instance": self.crr_prj, 
-            "project_properties": self.crr_prj_properties
-        }]
-        self.prjs = pd.concat([self.prjs, pd.DataFrame(prj_dict)], ignore_index=True)
+        self.crr_prj = self.de.open_project(full_name)
+        self.update_project_instance()
+        self.restore_properties()
         self.crr_prj.activate()
         print("[ OK ] Project duplicated successfully")
 
@@ -291,8 +333,16 @@ class CSTHandler:
         if not prj:
             prj = self.crr_prj
         print("[INFO] Closing project and removing its properties from the list ...")
-        index_to_drop = self.prjs[self.prjs["project_instance"] == prj].index
-        self.prjs = self.prjs.drop(index_to_drop).reset_index(drop=True)
+
+        # delete the project from self.projects
+        full_name = prj.filename()
+        if full_name in self.projects:
+            del self.projects[full_name]
+        else:
+            print("[WARN] Project not found in the list")
+            return
+
+        # close the project
         prj.close()
         print("[ OK ] Project closed successfully")
 
@@ -319,3 +369,85 @@ class CSTHandler:
         with open(prj_prop_path, "w") as f:
             json.dump(self.crr_prj_properties, f, indent=4, ensure_ascii=False)
         print("[ OK ] Project properties written successfully")
+
+
+    def restore_properties(self):
+        """
+        Restore current project properties to the CSTProjectWrapper object.
+        This method is called when a new project is opened or when the project is duplicated.
+        """
+        print("[INFO] Restoring project properties ...")
+        # get the current project directory and the path to the project properties
+        full_name = self.crr_prj.filename()
+        self.projects[full_name] = CSTProjectWrapper(
+            project_instance=self.crr_prj,
+            project_properties=self.crr_prj_properties.copy()
+        )
+        print("[ OK ] Project properties restored successfully")
+
+
+    def find_project_by_type(self, prj_type, return_form="full_name"):
+        """
+        Find all projects with a specific type.
+        Returns a list of CSTProjectWrapper objects.
+        """
+        if return_form == "full_name":
+            return [
+                full_name for full_name, wrapper in self.projects.items()
+                if wrapper.project_properties.get("type") == prj_type
+            ]
+        elif return_form == "instance":
+            return [
+                wrapper for wrapper in self.projects.values()
+                if wrapper.project_properties.get("type") == prj_type
+            ]
+
+
+    def update_project_properties(self):
+        """
+        Update the current project's stored properties in the projects dict.
+        """
+        full_name = self.crr_prj.filename()
+        if full_name in self.projects:
+            self.projects[full_name].project_properties = self.crr_prj_properties.copy()
+        else:
+            print("[WARN] Project not found in the list")
+
+
+    def update_project_instance(self):
+        """
+        Update the current project's instance in the projects dict.
+        """
+        full_name = self.crr_prj.filename()
+        if full_name in self.projects:
+            self.projects[full_name].project_instance = self.crr_prj
+        else:
+            print("[WARN] Project not found in the list")
+
+
+    def switch_to_project(self, full_name:str):
+        """
+        Switch to the specified project using its key.
+
+        Args:
+            full_name (str): Key to the project in self.projects
+        """
+        # Save current properties before switching
+        self.update_project_properties()
+
+        # Switch project
+        wrapper = self.projects[full_name]
+        self.crr_prj = wrapper.project_instance
+        self.crr_prj.activate()
+        self.crr_prj_properties = wrapper.project_properties
+
+        print(f"[ OK ] Switched to project: {self.crr_prj.filename()}")
+
+
+    def delete_project(self, full_name:str):
+        """
+        Delete the specified project from projects list.
+        by using its key.
+        """
+        self.projects[full_name].project_instance.close()
+        del self.projects[full_name]

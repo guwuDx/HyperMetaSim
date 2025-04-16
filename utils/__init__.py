@@ -17,3 +17,5 @@ basic_opts        = importlib.import_module(f"utils.cst_versions.{version}.basic
 param_opts        = importlib.import_module(f"utils.cst_versions.{version}.param_opts")
 materials_opts    = importlib.import_module(f"utils.cst_versions.{version}.materials_opts")
 results_opts      = importlib.import_module(f"utils.cst_versions.{version}.results_opts")
+
+models            = importlib.import_module(f"utils.cst_versions.{version}.build_model")

@@ -15,8 +15,8 @@ class SquarePillar:
         self.csth = csth
         self.padding = csth._DRC.padding
         self.h_l_ratio_upper_bound = csth._DRC.h_l_ratio_upper_bound
-        self.wavelength_min = csth.crr_prj_properties["wavelegnth_min"]
-        self.wavelength_max = csth.crr_prj_properties["wavelegnth_max"]
+        self.wavelength_min = csth.crr_prj_properties["wavelength_min"]
+        self.wavelength_max = csth.crr_prj_properties["wavelength_max"]
         self.canvas = Canvas()
         self.sweep_list = None
         # self.sweep_element = {
@@ -227,7 +227,6 @@ class SquarePillar:
                    phi:     float = None, # the azimuthal angle of the EM wave
                    theta:   float = None  # the incident angle of the EM wave
                    ):
-        import basic_opts
         print("[INFO] Setting parameters ...")
         obj = "StoreParameter"
 
@@ -235,8 +234,10 @@ class SquarePillar:
             self.canvas.write(f"{obj} \"h\", \"{h}\"", adapt=False)
         if l:
             self.canvas.write(f"{obj} \"l\", \"{l}\"", adapt=False)
-        res = self.canvas.send(self.csth, cmt="Set parameters")
-        
+        self.canvas.write("RebuildOnParametricChange \"False\", \"False\"", adapt=False)
+        self.canvas.preview(False)
+        res = self.canvas.send(self.csth, add_to_history=False)
+
         if res:
             print("[ OK ] Parameters set successfully")
             # basic_operations.update_params(self.csth)
@@ -245,6 +246,7 @@ class SquarePillar:
             raise RuntimeError("Failed to set parameters, please check whether the parameters exist")
 
         if p or theta or phi:
+            import basic_opts
             basic_opts.set_basic_params(self.csth, p, theta, phi)
 
 
