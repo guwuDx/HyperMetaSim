@@ -5,10 +5,11 @@ import utils.misc as misc
 import utils.mcbs as mcbs
 import cst.results
 
+import os
+import concurrent.futures
 import numpy as np
 from tqdm import tqdm
 from typing import List
-import concurrent.futures
 
 
 
@@ -201,22 +202,14 @@ def process_import_single_runid(project3d,
         sqlh.commit()
     # logging.info(f"Imported S-parameters for {sparam_name} with runid {runid}")
 
-def cst2mysql(project_name, 
-              force=False, 
-              s_param_list=[],
-              parallel_num=0,
-              compensation_length=0):
-    max_workers = parallel_num
-    if max_workers:
-        logger.warning("Using threads for importing data, this may cause issues if the database is not thread-safe.")
-    # max_workers = 5
-    logging.info(f"Using {max_workers} threads for importing data")
 
-    project = cst.results.ProjectFile(project_name)
+def process_single_project(name:str, max_workers:int=0, sparam_names:List[str]=[], 
+                           force:bool=False, compensation_length:float=0):
+    project = cst.results.ProjectFile(name, allow_interactive=True)
     if project:
         logging.info(f"Fetching S-parameters from {project.filename}")
     else:
-        logging.error(f"Project {project_name} open failed")
+        logging.error(f"Project {name} open failed")
         raise FileNotFoundError()
 
     sqlh = mcbs.SQLHandler()
@@ -234,7 +227,9 @@ def cst2mysql(project_name,
     param_info = sqlh.get_param_info(shape)
 
     project3d = project.get_3d()
-    sparam_names = get_sparam_names(project3d)
+    if not len(sparam_names):
+        logging.info(f"No S-parameters provided, fetching all from project")
+        sparam_names = get_sparam_names(project3d)
 
     N_M_idx, M_F_idx = get_split_points(project3d)
 
@@ -245,48 +240,54 @@ def cst2mysql(project_name,
     if max_workers:
         logging.info(f"Using {max_workers} threads for importing data")
         logger.warning("Using threads for importing data, this may cause issues if the database is not thread-safe.")
-        tasks = []
-        for sparam_name in sparam_names:
+        
+        # process each S-parameter name in parallel
+        def process_sparam(sparam_name):
             runids = project3d.get_run_ids(f"1D Results\\S-Parameters\\{sparam_name}", True)
             if not runids:
                 logging.info(f"No S-parameters found for {sparam_name}, the project may not have been simulated")
+                return
+
+            logging.info(f"Processing {len(runids)} runids for {sparam_name}")
+            for i, runid in enumerate(runids):
+                process_import_single_runid(
+                    project3d               = project3d,
+                    project_properties      = project_properties,
+                    param_info              = param_info,
+                    runid                   = runid,
+                    substrate_material_id   = substrate_material_id,
+                    pillar_material_id      = pillar_material_id,
+                    sparam_name             = sparam_name,
+                    N_M_idx                 = N_M_idx,
+                    M_F_idx                 = M_F_idx,
+                    compensation            = compensation_length,
+                    force                   = force
+                )
+                if (i+1) % 10 == 0:
+                    logging.info(f"Processed {i+1}/{len(runids)} runids for {sparam_name}")
+        
+        # collect valid S-parameter names
+        valid_sparam_names = []
+        for sparam_name in sparam_names:
+            try:
+                runids = project3d.get_run_ids(f"1D Results\\S-Parameters\\{sparam_name}", True)
+                if runids:
+                    valid_sparam_names.append(sparam_name)
+            except:
+                logging.warning(f"Failed to get runids for {sparam_name}")
                 continue
-            for runid in runids:
-                tasks.append((project3d, project_properties, param_info, 
-                            runid, substrate_material_id, pillar_material_id,
-                            sparam_name, N_M_idx, M_F_idx, compensation_length, force))
-
-        logging.info(f"Total tasks to process: {len(tasks)}")
-
-        def task_wrapper(args):
-            (project3d, project_properties, param_info, 
-            runid, substrate_material_id, pillar_material_id,
-            sparam_name, N_M_idx, M_F_idx, compensation_length, force) = args
-
-            process_import_single_runid(
-                project3d               = project3d,
-                project_properties      = project_properties,
-                param_info              = param_info,
-                runid                   = runid,
-                substrate_material_id   = substrate_material_id,
-                pillar_material_id      = pillar_material_id,
-                sparam_name             = sparam_name,
-                N_M_idx                 = N_M_idx,
-                M_F_idx                 = M_F_idx,
-                compensation            = compensation_length,
-                force                   = force
-            )
-
+        logging.info(f"Total valid S-parameters to process: {len(valid_sparam_names)}")
+        
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # schedule tasks
-            futures = [executor.submit(task_wrapper, t) for t in tasks]
+            # create a list of futures for each S-parameter name
+            futures = [executor.submit(process_sparam, sparam_name) for sparam_name in valid_sparam_names]
 
-            # use tqdm to show progress bar for all tasks
-            for _ in tqdm(concurrent.futures.as_completed(futures),
-                        total=len(futures),
-                        desc="Importing data",
-                        unit="task"):
-                pass
+            # # display progress bar with tqdm
+            # for _ in tqdm(concurrent.futures.as_completed(futures),
+            #              total=len(futures),
+            #              desc="Importing S-parameters",
+            #              unit="sparam"):
+            #     pass
     else:
         logger.info("Using single thread for importing data")
         cnt = 0
@@ -306,5 +307,65 @@ def cst2mysql(project_name,
                                             M_F_idx,
                                             compensation=compensation_length,
                                             force=force)
+
+
+# define a function to process each CST file
+def process_cst_file(cst_file, max_workers, sparam_names, force, compensation_length):
+    try:
+        logging.info(f"Processing {os.getpid()} starting to process {cst_file}")
+        process_single_project(cst_file, max_workers, sparam_names, force, compensation_length)
+        return f"successfully processed {cst_file}"
+    except Exception as e:
+        logging.error(f"Error processing {cst_file}: {str(e)}")
+        return f"failed to process {cst_file}: {str(e)}"
+
+
+def cst2mysql(project_name_or_dir:str,
+              sparam_names:list=[], 
+              force=False, 
+              parallel_num=1,
+              max_workers=0,
+              compensation_length=0):
+    if max_workers:
+        logging.warning("Using threads for importing data, this may cause issues if the database is not thread-safe.")
+    # max_workers = 5
+    logging.info(f"Using {max_workers} threads for importing data")
+
+    if project_name_or_dir.endswith(".cst"):
+        project_name = project_name_or_dir
+        process_single_project(project_name, max_workers, sparam_names, force, compensation_length)
+        return
+    else:
+        # get all .cst files in the directory
+        from os.path import join, abspath
+        import multiprocessing
+
+        cst_files = [f for f in os.listdir(project_name_or_dir) if f.endswith('.cst')]
+        if not cst_files:
+            logging.warning(f"No .cst files found in {project_name_or_dir}, ")
+            return
+        logging.info(f"Found {len(cst_files)} .cst files in {project_name_or_dir}")
+
+    # PROCESS EACH CST FILE START # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+        cst_files_full_paths = [join(abspath(project_name_or_dir), f) for f in cst_files]
+            
+        # get the number of parallel workers
+        if parallel_num <= 0:
+            num_processes = min(len(cst_files), multiprocessing.cpu_count() - 2)
+        else:
+            num_processes = parallel_num
+        logging.info(f"Using {num_processes} parallel workers")
+
+        # parallel processing of CST files
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            results = pool.starmap(process_cst_file, 
+                                   [(cst_file, max_workers, sparam_names, force, compensation_length) 
+                                    for cst_file in cst_files_full_paths])
+
+        # record the results
+        for result in results:
+            logging.info(result)
+            logging.info(f"Total {len(results)} CST files processed")
+    # PROCESS EACH CST FILE END # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     return
