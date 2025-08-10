@@ -1,4 +1,5 @@
 config/*.json
+config/*.toml
 logs/*
 prjs/instances/*
 prjs/permanent/*
