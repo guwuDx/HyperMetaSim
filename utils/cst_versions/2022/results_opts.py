@@ -331,11 +331,12 @@ def cst2mysql(project_name_or_dir:str,
     # max_workers = 5
     logging.info(f"Using {max_workers} threads for importing data")
 
-    if project_name_or_dir.endswith(".cst"):
+    if project_name_or_dir.endswith(".cst"): # if a single CST file is provided
         project_name = project_name_or_dir
         process_single_project(project_name, max_workers, sparam_names, force, compensation_length)
         return
-    else:
+
+    else: # if a directory is provided
         # get all .cst files in the directory
         from os.path import join, abspath
         import multiprocessing

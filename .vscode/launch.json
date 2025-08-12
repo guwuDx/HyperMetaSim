@@ -11,8 +11,9 @@
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "args": [
-                "--mode", "sql",
-                "--action", "import"
+                // "--mode", "sql",
+                // "--action", "import"
+                "--mode", "debug",
             ]
         }
     ]

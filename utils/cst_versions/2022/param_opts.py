@@ -386,7 +386,7 @@ class SquarePillar:
                 if res:
                     print(f"[ OK ] Simulation started for period {p}")
                     csth.save_crr_prj()
-                    csth.close_prj()
+                    csth.close_project()
                 else:
                     print(f"[ERRO] Failed to start simulation for period {p}")
                     raise RuntimeError(f"Failed to start simulation for period {p}")

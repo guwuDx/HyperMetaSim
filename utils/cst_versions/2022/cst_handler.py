@@ -105,13 +105,19 @@ class CSTHandler:
     def open_template(self, metastructure_type):
         projects_path = misc.read_config("./config/service.json", "cst")["projects_path"]
 
+        # construct the path to the template project
         source_project_path = f"{projects_path}{self._template_path}{metastructure_type}.cst"
+
+        # check if the template project exists and open it
+        if not os.path.exists(source_project_path):
+            print("[ERRO] Template project does not exist: " + source_project_path)
+            raise FileNotFoundError(f"Template project {metastructure_type} not found in {self._template_path}")
         print("[INFO] Opening project: " + source_project_path)
         prj = self.de.open_project(source_project_path)
         prj.activate()
         print("[ OK ] Project \"" + prj.filename() + "\" opened successfully")
-        # prj_type = prj.project_type()
-        
+
+        # check the solver status
         print("Accessing to Modeler ...")
         if prj.modeler.is_solver_running():
             print("[WARN] Solver is running, Aborting ...")
@@ -129,10 +135,9 @@ class CSTHandler:
                              wavelength_max
                              ):
         from utils import basic_opts
-
         crr_prj_type = self.crr_prj_properties["type"]
-        # project_name = project_name + "_" + str(uuid4())[:6]
 
+        # save as a new project instance
         print("[INFO] Instantiating Project ...")
         instance_project_path = f"{self._projects_path}{self._instance_path}/{crr_prj_type}/{project_name}.cst"
         self.crr_prj.save(path=instance_project_path, include_results=False)
@@ -142,6 +147,7 @@ class CSTHandler:
         print("[INFO] Project name is: ", file_name)
         print("[INFO] current project is: ", full_name)
 
+        # set basic project properties
         basic_opts.set_prj_wavelength(self, wavelength_min, wavelength_max)
         self.crr_prj_properties["type"] = crr_prj_type
         self.crr_prj_properties["wavelength_min"] = wavelength_min
@@ -189,7 +195,7 @@ class CSTHandler:
             self.crr_prj.save(path=f"{self._projects_path}{self._instance_path}/{shape_type}/{prj_name}.cst",
                               include_results=False)
             self.restore_properties()
-            self.delete_project(temp_file_name)
+            self.close_project(temp_file_name)
             print("[ OK ] Project saved successfully")
 
 
@@ -329,21 +335,39 @@ class CSTHandler:
         prj.save(path=permant_path, include_results=False)
 
 
-    def close_prj(self, prj=None):
-        if not prj:
-            prj = self.crr_prj
+    def close_project(self, full_name:str):
+        """
+        Close the specified or current project and remove its properties from the list.
+        Args:
+            full_name (str): Key to the project in self.projects. If None, close the current project.
+        """
         print("[INFO] Closing project and removing its properties from the list ...")
+        if not full_name: # close the current project
+            # get the current project name and path
+            full_name = self.crr_prj.filename()
+            prj = self.crr_prj
 
-        # delete the project from self.projects
-        full_name = prj.filename()
-        if full_name in self.projects:
-            del self.projects[full_name]
-        else:
-            print("[WARN] Project not found in the list")
-            return
+            # delete the project from self.projects
+            if full_name in self.projects:
+                del self.projects[full_name]
+            else:
+                print("[WARN] Project not found in the list")
+                return
 
-        # close the project
-        prj.close()
+            # close the project
+            prj.close()
+
+        else: # close a specific project
+            # delete the project from self.projects
+            if full_name in self.projects:
+                prj = self.projects[full_name].project_instance
+                del self.projects[full_name]
+
+                if not (self.crr_prj == prj): # prevent closing the current project unintentionally
+                    prj.close()
+                else:
+                    print("[WARN] Specified project possess the same pointer as the current project, refusing to close it")
+
         print("[ OK ] Project closed successfully")
 
 
@@ -442,12 +466,3 @@ class CSTHandler:
         self.crr_prj_properties = wrapper.project_properties
 
         print(f"[ OK ] Switched to project: {self.crr_prj.filename()}")
-
-
-    def delete_project(self, full_name:str):
-        """
-        Delete the specified project from projects list.
-        by using its key.
-        """
-        self.projects[full_name].project_instance.close()
-        del self.projects[full_name]

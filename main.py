@@ -15,9 +15,9 @@ from interfaces.app import app
 
 
 def debug():
-    prj = r"C:/Users/27950/OneDrive/Desktop/SquarePillar__surface_cstl2"
-    results_opts.cst2mysql(prj, compensation_length=1, max_workers=4, parallel_num=-1, force=False)
-    return
+    # prj = r"C:/Users/27950/OneDrive/Desktop/SquarePillar__surface_cstl2"
+    # results_opts.cst2mysql(prj, compensation_length=1, max_workers=4, parallel_num=-1, force=False)
+    # return
     # sparam_name = ["SZmax(2),Zmin(2)", "SZmax(1),Zmax(2)"]
     # data = results_opts.fetch_sparams(prj, sparam_name, plural=True)
     # return
@@ -27,14 +27,15 @@ def debug():
     cst.build_project_vba("SquarePillar", "SquarePillar_vba_build", 8, 15, True)
 
     basic_opts.set_acc_dc(cst)
-    basic_opts.set_FDSolver_source(cst, "Zmin", "TE(0,0)")
+    basic_opts.set_FDSolver_source(cst, "Zmin", "TM(0,0)")
 
     materials_opts.change_substrate(cst, "=Si_crystal=_freq-r-i_0.0310-310um_ByFranta-300K_2017")
     materials_opts.change_pillar(cst, "=Si_crystal=_freq-r-i_0.0310-310um_ByFranta-300K_2017")
 
-    param_opts.SquarePillar(cst).set_period_parallel_sweep(p_start=3.2, p_end=3.8, p_step=0.2,
-                                                           h_step=0.25, l_step=0.04,
-                                                           h_start=4, l_start=0.2,
+    param_opts.SquarePillar(cst).set_period_parallel_sweep(p_start=3.0, p_end=3.4, p_step=0.2,
+                                                           h_step=0.5, l_step=0.05,
+                                                           h_start=4.0, l_start=0.2,
+                                                           h_end=5.0, l_end=0.3,
                                                            start_now = False)
     # exec_parallel_sweep_from_list(cst, sweep_list, 3)
 
@@ -47,13 +48,14 @@ def debug():
 def main():
     misc.print_logo()
     parser = argparse.ArgumentParser(description="HyperMetaSim - A CST-based Automatic simulation tool for metamaterials.")
-    parser.add_argument("--mode", type=str, default="http", 
+    parser.add_argument("mode", type=str, default="http", 
+                        choices=["http", "cli", "playbook", "sql", "debug"],
                         help="Mode of operation: 'http' for web interface, \n" \
-                            "                    'cli' for command line interface. \n" \
-                            "                    'playbook' for running a predefined sequence of operations. \n" \
-                            "                    'sql' for database operations. \n" \
-                            "                    'debug' for debugging mode. Do not use in production. \n" \
-                            "                     Default is 'http'.") 
+                             "                   'cli' for command line interface. \n" \
+                             "                   'playbook' for running a predefined sequence of operations. \n" \
+                             "                   'sql' for database operations. \n" \
+                             "                   'debug' for debugging mode. Do not use in production. \n" \
+                             "                    Default is 'http'.") 
     parser.add_argument("--action", type=str, 
                         help="SQL action type: 'import:[Sparameters]' (import data), 'dup-check' (check for duplicates).")
     parser.add_argument("--path", type=str, 
@@ -83,8 +85,9 @@ def main():
             if not args.path:
                 logging.error("Path is required for import action.")
                 return
-            logging.info(f"Importing S-parameters from {args.path}...")
-            results_opts.cst2mysql(args.path, sparam_names, compensation_length, max_workers, parallel_num, force)
+            path = args.path
+            logging.info(f"Importing S-parameters from {path}...")
+            results_opts.cst2mysql(path, sparam_names, compensation_length, max_workers, parallel_num, force)
 
         elif args.action == "dup-check":
             logging.info("Performing duplicate check...")

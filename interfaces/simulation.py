@@ -79,7 +79,7 @@ def single_simulation(request: SingleSimRequest):
         if period != period_old or e_theta != e_theta_old or e_phi != e_phi_old:
             # rebuild the project with new basic parameters
             logging.info("Basic parameters have changed. Deleting old project.")
-            csth.delete_project(full_name)
+            csth.close_project(full_name)
             create_new_project_full(csth, shape_type, wavelength_min, wavelength_max,
                                     substrate_material, pillar_material, port, mode,
                                     period, e_theta, e_phi)
