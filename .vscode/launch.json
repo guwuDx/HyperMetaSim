@@ -12,9 +12,9 @@
             "console": "integratedTerminal",
             "args": [
                 "sql", "cst2mysql",
-                "-p", "C:/Users/pc/Desktop/works/cstprjs/CST Test Project/Test1/SquarePillar_2p2.cst",
-                // "-p", "C:/Users/pc/Desktop/works/cstprjs/CST Test Project/Test2"
-                "-s", "SZmax(2),Zmin(2)",
+                // "-p", "C:/Users/pc/Desktop/works/cstprjs/CST Test Project/Test1/SquarePillar_2p2.cst",
+                "-p", "C:/Users/pc/Desktop/works/cstprjs/CST Test Project/Test2",
+                // "-s", "SZmax(2),Zmin(2)",
             ]
         }, {
             "name": "Python: current file debug",

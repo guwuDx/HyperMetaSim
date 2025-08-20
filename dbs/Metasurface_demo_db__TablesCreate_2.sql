@@ -4,12 +4,6 @@
 
 
 -- -----------------------------------------------------------------------------------------------------
--- 数据库建立和调用
--- CREATE DATABASE Metasurface_demo_db;
--- USE Metasurface_demo_db;
-
-
--- -----------------------------------------------------------------------------------------------------
 -- 材料定义表建表初始化
 
 CREATE TABLE IF NOT EXISTS material_def (
@@ -334,6 +328,8 @@ CREATE TABLE IF NOT EXISTS CuboidPillar_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -345,6 +341,8 @@ CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -356,6 +354,8 @@ CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -367,6 +367,8 @@ CREATE TABLE IF NOT EXISTS Cross_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -378,6 +380,8 @@ CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -389,6 +393,8 @@ CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -400,6 +406,8 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_NIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -415,6 +423,8 @@ CREATE TABLE IF NOT EXISTS CuboidPillar_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -426,6 +436,8 @@ CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -437,6 +449,8 @@ CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -448,6 +462,8 @@ CREATE TABLE IF NOT EXISTS Cross_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -459,6 +475,8 @@ CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -470,6 +488,8 @@ CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -481,6 +501,8 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_MIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -496,6 +518,8 @@ CREATE TABLE IF NOT EXISTS CuboidPillar_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -507,6 +531,8 @@ CREATE TABLE IF NOT EXISTS SquarePillar_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -518,6 +544,8 @@ CREATE TABLE IF NOT EXISTS Cylinder_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -529,6 +557,8 @@ CREATE TABLE IF NOT EXISTS Cross_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -540,6 +570,8 @@ CREATE TABLE IF NOT EXISTS SquareHole_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -551,6 +583,8 @@ CREATE TABLE IF NOT EXISTS SymmetricCross_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -562,6 +596,8 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_FIR (
     `Frequency` DOUBLE UNSIGNED NOT NULL COMMENT '频率',
     `real_pt` DOUBLE NULL COMMENT '实部',
     `imag_pt` DOUBLE NULL COMMENT '虚部',
+    `Mag` DOUBLE NULL COMMENT '幅度',
+    `Phase` DOUBLE NULL COMMENT '相位',
     `GP_ID` BINARY(16) NOT NULL COMMENT '单元结构基本参数表外键',
     `ShP_ID` BINARY(16) NOT NULL COMMENT '单元结构形状参数表外键',
     FOREIGN KEY (`GP_ID`) REFERENCES generic_parameters(ID),
@@ -604,3 +640,457 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_FIR (
 
 -- END OF CREATIVE
 -- -----------------------------------------------------------------------------------------------------
+
+-- 触发器：自动计算振幅和相位
+-- -----------------------------------------------------------------------------------------------------
+
+-- NIR (近红外) 表触发器
+-- CuboidPillar_freq_resp_NIR 表触发器
+DELIMITER $$
+CREATE TRIGGER tr_CuboidPillar_freq_resp_NIR_INSERT
+    BEFORE INSERT ON CuboidPillar_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_CuboidPillar_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON CuboidPillar_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquarePillar_freq_resp_NIR 表触发器
+CREATE TRIGGER tr_SquarePillar_freq_resp_NIR_INSERT
+    BEFORE INSERT ON SquarePillar_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquarePillar_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON SquarePillar_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- Cylinder_freq_resp_NIR 表触发器
+CREATE TRIGGER tr_Cylinder_freq_resp_NIR_INSERT
+    BEFORE INSERT ON Cylinder_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_Cylinder_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON Cylinder_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- Cross_freq_resp_NIR 表触发器
+CREATE TRIGGER tr_Cross_freq_resp_NIR_INSERT
+    BEFORE INSERT ON Cross_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_Cross_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON Cross_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquareHole_freq_resp_NIR 表触发器
+CREATE TRIGGER tr_SquareHole_freq_resp_NIR_INSERT
+    BEFORE INSERT ON SquareHole_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquareHole_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON SquareHole_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SymmetricCross_freq_resp_NIR 表触发器
+CREATE TRIGGER tr_SymmetricCross_freq_resp_NIR_INSERT
+    BEFORE INSERT ON SymmetricCross_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SymmetricCross_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON SymmetricCross_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquareRing_freq_resp_NIR 表触发器
+CREATE TRIGGER tr_SquareRing_freq_resp_NIR_INSERT
+    BEFORE INSERT ON SquareRing_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquareRing_freq_resp_NIR_UPDATE
+    BEFORE UPDATE ON SquareRing_freq_resp_NIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- MIR (中红外) 表触发器
+-- CuboidPillar_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_CuboidPillar_freq_resp_MIR_INSERT
+    BEFORE INSERT ON CuboidPillar_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_CuboidPillar_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON CuboidPillar_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquarePillar_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_SquarePillar_freq_resp_MIR_INSERT
+    BEFORE INSERT ON SquarePillar_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquarePillar_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON SquarePillar_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- Cylinder_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_Cylinder_freq_resp_MIR_INSERT
+    BEFORE INSERT ON Cylinder_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_Cylinder_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON Cylinder_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- Cross_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_Cross_freq_resp_MIR_INSERT
+    BEFORE INSERT ON Cross_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_Cross_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON Cross_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquareHole_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_SquareHole_freq_resp_MIR_INSERT
+    BEFORE INSERT ON SquareHole_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquareHole_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON SquareHole_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SymmetricCross_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_SymmetricCross_freq_resp_MIR_INSERT
+    BEFORE INSERT ON SymmetricCross_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SymmetricCross_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON SymmetricCross_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquareRing_freq_resp_MIR 表触发器
+CREATE TRIGGER tr_SquareRing_freq_resp_MIR_INSERT
+    BEFORE INSERT ON SquareRing_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquareRing_freq_resp_MIR_UPDATE
+    BEFORE UPDATE ON SquareRing_freq_resp_MIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- FIR (远红外) 表触发器
+-- CuboidPillar_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_CuboidPillar_freq_resp_FIR_INSERT
+    BEFORE INSERT ON CuboidPillar_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_CuboidPillar_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON CuboidPillar_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquarePillar_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_SquarePillar_freq_resp_FIR_INSERT
+    BEFORE INSERT ON SquarePillar_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquarePillar_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON SquarePillar_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- Cylinder_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_Cylinder_freq_resp_FIR_INSERT
+    BEFORE INSERT ON Cylinder_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_Cylinder_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON Cylinder_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- Cross_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_Cross_freq_resp_FIR_INSERT
+    BEFORE INSERT ON Cross_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_Cross_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON Cross_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquareHole_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_SquareHole_freq_resp_FIR_INSERT
+    BEFORE INSERT ON SquareHole_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquareHole_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON SquareHole_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SymmetricCross_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_SymmetricCross_freq_resp_FIR_INSERT
+    BEFORE INSERT ON SymmetricCross_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SymmetricCross_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON SymmetricCross_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+-- SquareRing_freq_resp_FIR 表触发器
+CREATE TRIGGER tr_SquareRing_freq_resp_FIR_INSERT
+    BEFORE INSERT ON SquareRing_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+CREATE TRIGGER tr_SquareRing_freq_resp_FIR_UPDATE
+    BEFORE UPDATE ON SquareRing_freq_resp_FIR
+    FOR EACH ROW
+BEGIN
+    IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
+        SET NEW.Mag = SQRT(NEW.real_pt * NEW.real_pt + NEW.imag_pt * NEW.imag_pt);
+        SET NEW.Phase = ATAN2(NEW.imag_pt, NEW.real_pt);
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- -----------------------------------------------------------------------------------------------------
+
+
