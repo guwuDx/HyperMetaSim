@@ -648,7 +648,7 @@ CREATE TABLE IF NOT EXISTS SquareRing_freq_resp_FIR (
 -- CuboidPillar_freq_resp_NIR 表触发器
 DELIMITER $$
 CREATE TRIGGER tr_CuboidPillar_freq_resp_NIR_INSERT
-    BEFORE INSERT ON CuboidPillar_freq_resp_NIR
+    AFTER INSERT ON CuboidPillar_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -669,7 +669,7 @@ END$$
 
 -- SquarePillar_freq_resp_NIR 表触发器
 CREATE TRIGGER tr_SquarePillar_freq_resp_NIR_INSERT
-    BEFORE INSERT ON SquarePillar_freq_resp_NIR
+    AFTER INSERT ON SquarePillar_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -690,7 +690,7 @@ END$$
 
 -- Cylinder_freq_resp_NIR 表触发器
 CREATE TRIGGER tr_Cylinder_freq_resp_NIR_INSERT
-    BEFORE INSERT ON Cylinder_freq_resp_NIR
+    AFTER INSERT ON Cylinder_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -711,7 +711,7 @@ END$$
 
 -- Cross_freq_resp_NIR 表触发器
 CREATE TRIGGER tr_Cross_freq_resp_NIR_INSERT
-    BEFORE INSERT ON Cross_freq_resp_NIR
+    AFTER INSERT ON Cross_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -732,7 +732,7 @@ END$$
 
 -- SquareHole_freq_resp_NIR 表触发器
 CREATE TRIGGER tr_SquareHole_freq_resp_NIR_INSERT
-    BEFORE INSERT ON SquareHole_freq_resp_NIR
+    AFTER INSERT ON SquareHole_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -753,7 +753,7 @@ END$$
 
 -- SymmetricCross_freq_resp_NIR 表触发器
 CREATE TRIGGER tr_SymmetricCross_freq_resp_NIR_INSERT
-    BEFORE INSERT ON SymmetricCross_freq_resp_NIR
+    AFTER INSERT ON SymmetricCross_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -774,7 +774,7 @@ END$$
 
 -- SquareRing_freq_resp_NIR 表触发器
 CREATE TRIGGER tr_SquareRing_freq_resp_NIR_INSERT
-    BEFORE INSERT ON SquareRing_freq_resp_NIR
+    AFTER INSERT ON SquareRing_freq_resp_NIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -796,7 +796,7 @@ END$$
 -- MIR (中红外) 表触发器
 -- CuboidPillar_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_CuboidPillar_freq_resp_MIR_INSERT
-    BEFORE INSERT ON CuboidPillar_freq_resp_MIR
+    AFTER INSERT ON CuboidPillar_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -817,7 +817,7 @@ END$$
 
 -- SquarePillar_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_SquarePillar_freq_resp_MIR_INSERT
-    BEFORE INSERT ON SquarePillar_freq_resp_MIR
+    AFTER INSERT ON SquarePillar_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -838,7 +838,7 @@ END$$
 
 -- Cylinder_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_Cylinder_freq_resp_MIR_INSERT
-    BEFORE INSERT ON Cylinder_freq_resp_MIR
+    AFTER INSERT ON Cylinder_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -859,7 +859,7 @@ END$$
 
 -- Cross_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_Cross_freq_resp_MIR_INSERT
-    BEFORE INSERT ON Cross_freq_resp_MIR
+    AFTER INSERT ON Cross_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -880,7 +880,7 @@ END$$
 
 -- SquareHole_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_SquareHole_freq_resp_MIR_INSERT
-    BEFORE INSERT ON SquareHole_freq_resp_MIR
+    AFTER INSERT ON SquareHole_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -901,7 +901,7 @@ END$$
 
 -- SymmetricCross_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_SymmetricCross_freq_resp_MIR_INSERT
-    BEFORE INSERT ON SymmetricCross_freq_resp_MIR
+    AFTER INSERT ON SymmetricCross_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -922,7 +922,7 @@ END$$
 
 -- SquareRing_freq_resp_MIR 表触发器
 CREATE TRIGGER tr_SquareRing_freq_resp_MIR_INSERT
-    BEFORE INSERT ON SquareRing_freq_resp_MIR
+    AFTER INSERT ON SquareRing_freq_resp_MIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -944,7 +944,7 @@ END$$
 -- FIR (远红外) 表触发器
 -- CuboidPillar_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_CuboidPillar_freq_resp_FIR_INSERT
-    BEFORE INSERT ON CuboidPillar_freq_resp_FIR
+    AFTER INSERT ON CuboidPillar_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -965,7 +965,7 @@ END$$
 
 -- SquarePillar_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_SquarePillar_freq_resp_FIR_INSERT
-    BEFORE INSERT ON SquarePillar_freq_resp_FIR
+    AFTER INSERT ON SquarePillar_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -986,7 +986,7 @@ END$$
 
 -- Cylinder_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_Cylinder_freq_resp_FIR_INSERT
-    BEFORE INSERT ON Cylinder_freq_resp_FIR
+    AFTER INSERT ON Cylinder_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -1007,7 +1007,7 @@ END$$
 
 -- Cross_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_Cross_freq_resp_FIR_INSERT
-    BEFORE INSERT ON Cross_freq_resp_FIR
+    AFTER INSERT ON Cross_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -1028,7 +1028,7 @@ END$$
 
 -- SquareHole_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_SquareHole_freq_resp_FIR_INSERT
-    BEFORE INSERT ON SquareHole_freq_resp_FIR
+    AFTER INSERT ON SquareHole_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -1049,7 +1049,7 @@ END$$
 
 -- SymmetricCross_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_SymmetricCross_freq_resp_FIR_INSERT
-    BEFORE INSERT ON SymmetricCross_freq_resp_FIR
+    AFTER INSERT ON SymmetricCross_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
@@ -1070,7 +1070,7 @@ END$$
 
 -- SquareRing_freq_resp_FIR 表触发器
 CREATE TRIGGER tr_SquareRing_freq_resp_FIR_INSERT
-    BEFORE INSERT ON SquareRing_freq_resp_FIR
+    AFTER INSERT ON SquareRing_freq_resp_FIR
     FOR EACH ROW
 BEGIN
     IF NEW.real_pt IS NOT NULL AND NEW.imag_pt IS NOT NULL THEN
