@@ -7,7 +7,9 @@ from utils import basic_opts
 from utils import materials_opts
 from utils import param_opts
 from utils import results_opts
+from utils.cli_parser import parser_constructor
 
+import os
 import uvicorn
 import argparse
 from interfaces.app import app
@@ -47,23 +49,11 @@ def debug():
 
 def main():
     misc.print_logo()
-    parser = argparse.ArgumentParser(description="HyperMetaSim - A CST-based Automatic simulation tool for metamaterials.")
-    parser.add_argument("mode", type=str, default="http", 
-                        choices=["http", "cli", "playbook", "sql", "debug"],
-                        help="Mode of operation: 'http' for web interface, \n" \
-                             "                   'cli' for command line interface. \n" \
-                             "                   'playbook' for running a predefined sequence of operations. \n" \
-                             "                   'sql' for database operations. \n" \
-                             "                   'debug' for debugging mode. Do not use in production. \n" \
-                             "                    Default is 'http'.") 
-    parser.add_argument("--action", type=str, 
-                        help="SQL action type: 'import:[Sparameters]' (import data), 'dup-check' (check for duplicates).")
-    parser.add_argument("--path", type=str, 
-                        help="Path to data file/directory for project being processed.")
 
-    args = parser.parse_args()
+    # Parse command line arguments
+    args = parser_constructor()
 
-
+    # Handle command line arguments
     if args.mode == "http":
         logging.info("Starting HyperMetaSim in HTTP mode...")
         uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
@@ -81,20 +71,38 @@ def main():
 
     elif args.mode == "sql":
         logging.info("Starting HyperMetaSim in SQL mode...")
-        if args.action == "import":
+
+        # import data from .cst project file
+        if args.action == "cst2mysql": 
             if not args.path:
-                logging.error("Path is required for import action.")
+                logging.error("Path is required for cst2mysql action.")
                 return
-            path = args.path
+            else: # check the existence of the path
+                path = args.path
+                if not os.path.exists(path):
+                    logging.error(f"Path does not exist: {path}")
+                    return
+
+            # get args
+            if args.sparam_names: 
+                sparam_names = args.sparam_names[0] if type(args.sparam_names[0]) == list else args.sparam_names
+            else:
+                sparam_names = []
+            compensation_length = args.compensation
+            max_workers         = args.thread
+            parallel_num        = args.file_parallel
+            force               = args.force
+
+            # execute import
             logging.info(f"Importing S-parameters from {path}...")
-            results_opts.cst2mysql(path, sparam_names, compensation_length, max_workers, parallel_num, force)
+            results_opts.cst2mysql(path, sparam_names, compensation_length, parallel_num, max_workers, force)
 
         elif args.action == "dup-check":
             logging.info("Performing duplicate check...")
             results_opts.dup_check()
 
         else:
-            logging.error(f"Unknown SQL action: {args.action}. Please use 'import' or 'dup-check'.")
+            logging.error(f"Unknown SQL action: {args.action}. Please use 'cst2mysql' or 'dup-check'.")
             return
 
 

@@ -18,7 +18,7 @@ REM 设置要创建的数据库名称
 SET DATABASE_NAME=mcb_test
 
 REM 删除原有数据库 
-mysqladmin -u%MYSQL_USER% -p%MYSQL_PASS% -h %HOST% -P %PORT% DROP %DATABASE_NAME%
+mysqladmin -u%MYSQL_USER% -p%MYSQL_PASS% -h %HOST% -P %PORT% DROP %DATABASE_NAME% -f
 
 REM 创建数据库 
 mysql -u%MYSQL_USER% -p%MYSQL_PASS% -h %HOST% -P %PORT% -e "CREATE DATABASE IF NOT EXISTS %DATABASE_NAME%;"

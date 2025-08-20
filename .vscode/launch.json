@@ -5,16 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python 调试: 主文件",
+            "name": "Python: main.py debug",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "args": [
-                // "--mode", "sql",
-                // "--action", "import"
-                "--mode", "debug",
+                "sql", "cst2mysql",
+                "-p", "C:/Users/pc/Desktop/works/cstprjs/CST Test Project/Test1/SquarePillar_2p2.cst",
+                // "-p", "C:/Users/pc/Desktop/works/cstprjs/CST Test Project/Test2"
+                "-s", "SZmax(2),Zmin(2)",
             ]
-        }
+        }, {
+            "name": "Python: current file debug",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
     ]
 }
